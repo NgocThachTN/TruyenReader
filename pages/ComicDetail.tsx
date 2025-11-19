@@ -130,13 +130,15 @@ const ComicDetail: React.FC = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap justify-center md:justify-start gap-4 mb-4">
-              {comic.chapters[0]?.server_data[0] && (
+              {comic.chapters[0]?.server_data.length > 0 && (
                 <button
-                  onClick={() =>
-                    handleReadChapter(
-                      comic.chapters[0].server_data[0].chapter_api_data
-                    )
-                  }
+                  onClick={() => {
+                    const firstChapter =
+                      comic.chapters[0].server_data[
+                        comic.chapters[0].server_data.length - 1
+                      ];
+                    handleReadChapter(firstChapter.chapter_api_data);
+                  }}
                   className="w-full md:w-auto px-8 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm uppercase tracking-wider shadow-lg shadow-rose-900/20 transition-all hover:-translate-y-0.5"
                 >
                   Đọc Từ Đầu
@@ -144,13 +146,11 @@ const ComicDetail: React.FC = () => {
               )}
               {comic.chapters[0]?.server_data.length > 0 && (
                 <button
-                  onClick={() => {
-                    const last =
-                      comic.chapters[0].server_data[
-                        comic.chapters[0].server_data.length - 1
-                      ];
-                    handleReadChapter(last.chapter_api_data);
-                  }}
+                  onClick={() =>
+                    handleReadChapter(
+                      comic.chapters[0].server_data[0].chapter_api_data
+                    )
+                  }
                   className="w-full md:w-auto px-8 py-3 bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-sm uppercase tracking-wider border border-neutral-700 transition-all hover:-translate-y-0.5"
                 >
                   Chương Mới Nhất
