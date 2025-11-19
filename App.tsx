@@ -25,7 +25,7 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
       </main>
       {!isReading && (
         <footer className="bg-slate-950 border-t border-slate-800 py-8 text-center text-slate-500 text-sm">
-          <p>© {new Date().getFullYear()} OTruyen Reader. Designed for manga lovers.</p>
+          <p>© {new Date().getFullYear()} TruyenReader. Designed for manga lovers.</p>
         </footer>
       )}
     </div>

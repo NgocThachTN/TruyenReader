@@ -72,7 +72,7 @@ const PWAInstallPrompt: React.FC = () => {
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-lg mb-1">Cài đặt Ứng dụng</h3>
             <p className="text-sm text-white/90 mb-3">
-              Thêm OTruyen vào màn hình chính để truy cập nhanh như một ứng dụng native!
+              Thêm TruyenReader vào màn hình chính để truy cập nhanh như một ứng dụng native!
             </p>
             
             {/* Actions */}

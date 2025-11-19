@@ -45,8 +45,8 @@ const svgTemplate = (size) =>
   </g>
   
   <!-- Text -->
-  <text x="256" y="430" font-family="Arial, sans-serif" font-size="48" font-weight="bold" 
-        fill="#10b981" text-anchor="middle">OTruyen</text>
+  <text x="256" y="430" font-family="Arial, sans-serif" font-size="40" font-weight="bold" 
+        fill="#10b981" text-anchor="middle">TruyenReader</text>
 </svg>
 `.trim();
 
