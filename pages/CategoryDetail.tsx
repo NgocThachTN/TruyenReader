@@ -81,7 +81,7 @@ const CategoryDetail: React.FC = () => {
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">{data.titlePage}</h1>
-          <p className="text-slate-400">Found {totalItems} comics</p>
+          <p className="text-slate-400">Tìm thấy {totalItems} truyện</p>
         </div>
 
         <div className="flex flex-wrap gap-3">
@@ -93,9 +93,9 @@ const CategoryDetail: React.FC = () => {
             }}
             className="bg-slate-800 text-white border border-slate-700 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-500"
           >
-            <option value="all">All Status</option>
-            <option value="ongoing">Ongoing</option>
-            <option value="completed">Completed</option>
+            <option value="all">Tất Cả</option>
+            <option value="ongoing">Đang Tiến Hành</option>
+            <option value="completed">Đã hoàn Thành</option>
           </select>
 
           <select
@@ -103,11 +103,11 @@ const CategoryDetail: React.FC = () => {
             onChange={(e) => setSortOrder(e.target.value)}
             className="bg-slate-800 text-white border border-slate-700 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-500"
           >
-            <option value="default">Default Sort</option>
-            <option value="latest">Latest Updated</option>
-            <option value="oldest">Oldest Updated</option>
-            <option value="name_asc">Name (A-Z)</option>
-            <option value="name_desc">Name (Z-A)</option>
+            <option value="default">Mặc Định</option>
+            <option value="latest">Mới Nhất</option>
+            <option value="oldest">Cũ Nhất</option>
+            <option value="name_asc">Tên (A-Z)</option>
+            <option value="name_desc">Tên (Z-A)</option>
           </select>
         </div>
       </div>

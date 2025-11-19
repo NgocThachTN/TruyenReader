@@ -64,7 +64,7 @@ const ChapterViewer: React.FC = () => {
           setComic(comicResult.data.item);
         }
       } catch (err) {
-        setError("Failed to load chapter images.");
+        setError("Không thể tải ảnh chương.");
       } finally {
         setLoading(false);
       }
@@ -152,10 +152,10 @@ const ChapterViewer: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <div className="text-red-400 bg-red-500/10 p-4 rounded-lg">
-          {error || "Could not load chapter"}
+          {error || "Không thể tải chương"}
         </div>
         <Link to="/" className="text-emerald-400 hover:underline">
-          Return Home
+          Về Trang Chủ
         </Link>
       </div>
     );
@@ -178,7 +178,7 @@ const ChapterViewer: React.FC = () => {
           <button
             onClick={() => navigate(`/comic/${slug}`)}
             className="text-slate-300 hover:text-white flex items-center gap-1.5 p-1.5 hover:bg-slate-800 rounded-lg transition-colors"
-            title="Back to Comic"
+            title="Quay Lại Truyện"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -194,7 +194,9 @@ const ChapterViewer: React.FC = () => {
                 d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
               />
             </svg>
-            <span className="hidden md:inline text-sm font-medium">Back</span>
+            <span className="hidden md:inline text-sm font-medium">
+              Quay Lại
+            </span>
           </button>
         </div>
 
@@ -208,7 +210,7 @@ const ChapterViewer: React.FC = () => {
                 ? "text-slate-300 hover:text-white hover:bg-slate-700"
                 : "text-slate-600 cursor-not-allowed"
             }`}
-            title="Previous Chapter"
+            title="Chương Trước"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -232,7 +234,7 @@ const ChapterViewer: React.FC = () => {
           >
             <span className="truncate">
               {data.item.chapter_path.split("/").pop()?.replace(/_/g, " ") ||
-                "Chapter"}
+                "Chương"}
             </span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -267,7 +269,7 @@ const ChapterViewer: React.FC = () => {
                   }`}
                 >
                   <span className="font-medium truncate">
-                    Chapter {chapter.chapter_name}
+                    Chương {chapter.chapter_name}
                   </span>
                 </button>
               ))}
@@ -282,7 +284,7 @@ const ChapterViewer: React.FC = () => {
                 ? "text-slate-300 hover:text-white hover:bg-slate-700"
                 : "text-slate-600 cursor-not-allowed"
             }`}
-            title="Next Chapter"
+            title="Chương Sau"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -309,7 +311,7 @@ const ChapterViewer: React.FC = () => {
                 ? "bg-emerald-600 text-white"
                 : "text-slate-400 hover:text-white hover:bg-slate-700/50"
             }`}
-            title="Scroll Mode"
+            title="Cuộn"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -333,7 +335,7 @@ const ChapterViewer: React.FC = () => {
                 ? "bg-emerald-600 text-white"
                 : "text-slate-400 hover:text-white hover:bg-slate-700/50"
             }`}
-            title="Single Page Mode"
+            title="Từng Trang"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -362,7 +364,7 @@ const ChapterViewer: React.FC = () => {
               <div key={index} className="relative w-full">
                 <img
                   src={src}
-                  alt={`Page ${index + 1}`}
+                  alt={`Trang ${index + 1}`}
                   loading="lazy"
                   className="w-full h-auto block"
                 />
@@ -384,12 +386,12 @@ const ChapterViewer: React.FC = () => {
             <div className="relative w-full max-h-screen flex justify-center">
               <img
                 src={images[currentPage]}
-                alt={`Page ${currentPage + 1}`}
+                alt={`Trang ${currentPage + 1}`}
                 className="max-w-full max-h-[85vh] object-contain"
               />
             </div>
             <div className="mt-4 text-slate-400 text-sm">
-              Page {currentPage + 1} of {images.length}
+              Trang {currentPage + 1} / {images.length}
             </div>
           </div>
         )}
@@ -422,7 +424,7 @@ const ChapterViewer: React.FC = () => {
                   d="M15.75 19.5 8.25 12l7.5-7.5"
                 />
               </svg>
-              Prev Chapter
+              Chương Trước
             </button>
 
             <button
@@ -434,7 +436,7 @@ const ChapterViewer: React.FC = () => {
                   : "bg-slate-800/50 text-slate-500 cursor-not-allowed"
               }`}
             >
-              Next Chapter
+              Chương Sau
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -457,7 +459,7 @@ const ChapterViewer: React.FC = () => {
               to={`/comic/${comic.slug}`}
               className="text-slate-500 hover:text-emerald-400 text-sm mt-2"
             >
-              Back to {comic.name}
+              Quay lại {comic.name}
             </Link>
           )}
         </div>

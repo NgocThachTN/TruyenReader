@@ -66,11 +66,11 @@ const Header: React.FC = () => {
   const closeMenu = () => setIsMenuOpen(false);
 
   const navLinks = [
-    { path: '/', label: 'Home' },
-    { path: '/categories', label: 'Genres' },
-    { path: '/list/truyen-moi', label: 'New Comics' },
-    { path: '/list/dang-phat-hanh', label: 'Ongoing' },
-    { path: '/list/hoan-thanh', label: 'Completed' },
+    { path: '/', label: 'Trang Chủ' },
+    { path: '/categories', label: 'Thể Loại' },
+    { path: '/list/truyen-moi', label: 'Truyện Mới' },
+    { path: '/list/dang-phat-hanh', label: 'Đang Phát Hành' },
+    { path: '/list/hoan-thanh', label: 'Hoàn Thành' },
   ];
 
   return (
@@ -96,7 +96,7 @@ const Header: React.FC = () => {
                             setShowDropdown(true);
                         }
                     }}
-                    placeholder="Search..."
+                    placeholder="Tìm kiếm..."
                     className="w-full bg-slate-800 text-slate-200 rounded-full py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                 />
                 <button 
@@ -144,7 +144,7 @@ const Header: React.FC = () => {
                                 <div className="text-xs text-slate-500 mt-1 flex items-center gap-2">
                                     {item.chaptersLatest && item.chaptersLatest.length > 0 && (
                                         <span className="text-emerald-500">
-                                            Ch. {item.chaptersLatest[0].chapter_name}
+                                            Chương {item.chaptersLatest[0].chapter_name}
                                         </span>
                                     )}
                                     {item.category && item.category.length > 0 && (
@@ -164,7 +164,7 @@ const Header: React.FC = () => {
                         className="block p-3 text-center text-sm text-emerald-500 hover:text-emerald-400 hover:bg-slate-800 font-medium transition-colors sticky bottom-0 bg-slate-900 border-t border-slate-800"
                         onClick={handleResultClick}
                     >
-                        View all results for "{keyword}"
+                        Xem tất cả kết quả cho "{keyword}"
                     </Link>
                 </div>
             )}

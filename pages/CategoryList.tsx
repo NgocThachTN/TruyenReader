@@ -39,8 +39,8 @@ const CategoryList: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Genres</h1>
-        <p className="text-slate-400">Explore comics by category</p>
+        <h1 className="text-3xl font-bold text-white mb-2">Thể loại</h1>
+        <p className="text-slate-400">Truyện theo từng thể loại</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">

@@ -22,7 +22,7 @@ const Search: React.FC = () => {
         const result = await searchComics(keyword);
         setData(result.data);
       } catch (err) {
-        setError('Failed to search comics. Please try again later.');
+        setError('Tìm kiếm thất bại. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);
       }
@@ -46,8 +46,8 @@ const Search: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Search Results</h1>
-        <p className="text-slate-400">Results for "{keyword}"</p>
+        <h1 className="text-3xl font-bold text-white mb-2">Kết Quả Tìm Kiếm</h1>
+        <p className="text-slate-400">Kết quả cho "{keyword}"</p>
       </div>
 
       {data && data.items.length > 0 ? (
@@ -62,7 +62,7 @@ const Search: React.FC = () => {
         </div>
       ) : (
         <div className="text-center text-slate-500 py-10">
-          {keyword ? 'No comics found matching your search.' : 'Enter a keyword to search.'}
+          {keyword ? 'Không tìm thấy truyện nào phù hợp.' : 'Nhập từ khóa để tìm kiếm.'}
         </div>
       )}
     </div>

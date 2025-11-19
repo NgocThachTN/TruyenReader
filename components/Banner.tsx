@@ -110,8 +110,8 @@ const Banner: React.FC<BannerProps> = ({ comics, domain }) => {
                   />
                 </svg>
                 {currentComic.chaptersLatest?.[0]?.chapter_name
-                  ? `Chapter ${currentComic.chaptersLatest[0].chapter_name}`
-                  : "Updating"}
+                  ? `Chương ${currentComic.chaptersLatest[0].chapter_name}`
+                  : "Đang cập nhật"}
               </span>
             </div>
 
@@ -123,7 +123,7 @@ const Banner: React.FC<BannerProps> = ({ comics, domain }) => {
                 to={`/comic/${currentComic.slug}`}
                 className="flex-1 md:flex-none inline-flex justify-center items-center gap-2 md:gap-3 px-6 py-3 md:px-8 md:py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-base md:text-lg transition-all hover:shadow-xl hover:shadow-emerald-500/20 transform hover:-translate-y-1"
               >
-                Read Now
+                Đọc Ngay
                 <svg
                   className="w-4 h-4 md:w-5 md:h-5"
                   fill="none"
@@ -142,7 +142,7 @@ const Banner: React.FC<BannerProps> = ({ comics, domain }) => {
                 to={`/comic/${currentComic.slug}`}
                 className="flex-1 md:flex-none inline-flex justify-center items-center gap-2 px-6 py-3 md:px-8 md:py-4 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-base md:text-lg transition-all backdrop-blur-sm border border-white/10"
               >
-                Details
+                Chi Tiết
               </Link>
             </div>
           </div>

@@ -33,7 +33,7 @@ const Home: React.FC = () => {
         setCompletedComics(completedResult.data);
         setMangaComics(mangaResult.data);
       } catch (err) {
-        setError('Failed to load comics. Please try again later.');
+        setError('Không thể tải truyện. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);
       }
@@ -68,10 +68,10 @@ const Home: React.FC = () => {
             <div className="flex justify-between items-end mb-6">
                 <div>
                     <h1 className="text-3xl font-bold text-white mb-2">Manga</h1>
-                    <p className="text-slate-400">Top Manga Series</p>
+                    <p className="text-slate-400">Truyện Manga Hot</p>
                 </div>
                 <Link to="/category/manga" className="text-emerald-400 hover:text-emerald-300 font-medium text-sm flex items-center gap-1">
-                    View All
+                    Xem Tất Cả
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </Link>
             </div>
@@ -93,11 +93,11 @@ const Home: React.FC = () => {
           <div className="mt-12">
             <div className="flex justify-between items-end mb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">New Comics</h1>
-                    <p className="text-slate-400">Fresh manga releases</p>
+                    <h1 className="text-3xl font-bold text-white mb-2">Truyện Mới Cập Nhật</h1>
+                    <p className="text-slate-400">Truyện vừa được cập nhật</p>
                 </div>
                 <Link to="/list/truyen-moi" className="text-emerald-400 hover:text-emerald-300 font-medium text-sm flex items-center gap-1">
-                    View All
+                    Xem Tất Cả
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </Link>
             </div>
@@ -119,11 +119,11 @@ const Home: React.FC = () => {
           <div className="mt-12">
             <div className="flex justify-between items-end mb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Ongoing Series</h1>
-                    <p className="text-slate-400">Top ongoing manga right now</p>
+                    <h1 className="text-3xl font-bold text-white mb-2">Truyện Đang Phát Hành</h1>
+                    <p className="text-slate-400">Top truyện đang hot hiện nay</p>
                 </div>
                 <Link to="/list/dang-phat-hanh" className="text-emerald-400 hover:text-emerald-300 font-medium text-sm flex items-center gap-1">
-                    View All
+                    Xem Tất Cả
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </Link>
             </div>
@@ -145,11 +145,11 @@ const Home: React.FC = () => {
           <div className="mt-12">
             <div className="flex justify-between items-end mb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Completed Series</h1>
-                    <p className="text-slate-400">Fully released manga</p>
+                    <h1 className="text-3xl font-bold text-white mb-2">Truyện Đã Hoàn Thành</h1>
+                    <p className="text-slate-400">Truyện đã ra mắt trọn bộ</p>
                 </div>
                 <Link to="/list/hoan-thanh" className="text-emerald-400 hover:text-emerald-300 font-medium text-sm flex items-center gap-1">
-                    View All
+                    Xem Tất Cả
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </Link>
             </div>

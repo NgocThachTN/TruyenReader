@@ -27,7 +27,7 @@ const ComicCard: React.FC<ComicCardProps> = ({ comic, domain }) => {
         {latestChapter && (
             <div className="absolute bottom-2 left-2 right-2">
                 <span className="inline-block bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded shadow-md">
-                    Chapter {latestChapter.chapter_name}
+                    Chương {latestChapter.chapter_name}
                 </span>
             </div>
         )}
@@ -51,7 +51,7 @@ const ComicCard: React.FC<ComicCardProps> = ({ comic, domain }) => {
             )}
         </div>
         <div className="text-xs text-slate-500 mt-2">
-            Updated: {new Date(comic.updatedAt).toLocaleDateString()}
+            Cập nhật: {new Date(comic.updatedAt).toLocaleDateString()}
         </div>
       </div>
     </Link>
