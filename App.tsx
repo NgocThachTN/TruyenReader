@@ -8,6 +8,8 @@ import Search from './pages/Search';
 import CategoryList from './pages/CategoryList';
 import CategoryDetail from './pages/CategoryDetail';
 import ComicList from './pages/ComicList';
+import { Analytics } from "@vercel/analytics/next"
+
 
 const Layout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
@@ -43,6 +45,7 @@ const App: React.FC = () => {
           <Route path="/chapter/:slug/:apiUrl" element={<ChapterViewer />} />
         </Routes>
       </Layout>
+      <Analytics />
     </Router>
   );
 };
