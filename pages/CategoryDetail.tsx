@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { fetchComicsByCategory } from '../services/api';
+import { fetchComicsByCategory, fetchComicList } from '../services/api';
 import { CategoryDetailData } from '../types';
 import ComicCard from '../components/ComicCard';
 import Spinner from '../components/Spinner';
@@ -22,7 +22,14 @@ const CategoryDetail: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const result = await fetchComicsByCategory(slug, currentPage);
+        let result;
+        if (filterStatus === 'completed') {
+          result = await fetchComicList('hoan-thanh', currentPage, slug);
+        } else if (filterStatus === 'ongoing') {
+          result = await fetchComicList('dang-phat-hanh', currentPage, slug);
+        } else {
+          result = await fetchComicsByCategory(slug, currentPage);
+        }
         setData(result.data);
       } catch (err) {
         setError('Failed to load comics. Please try again later.');
@@ -32,7 +39,7 @@ const CategoryDetail: React.FC = () => {
     };
 
     loadData();
-  }, [slug, currentPage]);
+  }, [slug, currentPage, filterStatus]);
 
   const handlePageChange = (page: number) => {
     setSearchParams({ page: page.toString() });
@@ -59,34 +66,6 @@ const CategoryDetail: React.FC = () => {
   // Filter and Sort Logic
   let displayedItems = [...data.items];
 
-  if (filterStatus !== 'all') {
-    displayedItems = displayedItems.filter(item => {
-      if (!item.status) return false;
-      const status = item.status.toLowerCase();
-      
-      if (filterStatus === 'completed') {
-        return (
-          status === 'completed' || 
-          status === 'hoàn thành' || 
-          status.includes('hoàn') || 
-          status.includes('full') ||
-          status.includes('end') ||
-          status.includes('trọn bộ')
-        );
-      }
-      if (filterStatus === 'ongoing') {
-        return (
-          status === 'ongoing' || 
-          status === 'đang phát hành' || 
-          status.includes('đang') || 
-          status.includes('tiến hành') ||
-          status.includes('cập nhật')
-        );
-      }
-      return true;
-    });
-  }
-
   if (sortOrder === 'latest') {
     displayedItems.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   } else if (sortOrder === 'oldest') {
@@ -108,7 +87,10 @@ const CategoryDetail: React.FC = () => {
         <div className="flex flex-wrap gap-3">
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => {
+              setFilterStatus(e.target.value);
+              setSearchParams({ page: '1' });
+            }}
             className="bg-slate-800 text-white border border-slate-700 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-500"
           >
             <option value="all">All Status</option>

@@ -67,9 +67,13 @@ export const fetchComicsByCategory = async (slug: string, page: number = 1): Pro
   }
 };
 
-export const fetchComicList = async (slug: string, page: number = 1): Promise<CategoryDetailResponse> => {
+export const fetchComicList = async (slug: string, page: number = 1, category?: string): Promise<CategoryDetailResponse> => {
   try {
-    const response = await fetch(`${BASE_URL}/danh-sach/${slug}?page=${page}`);
+    let url = `${BASE_URL}/danh-sach/${slug}?page=${page}`;
+    if (category) {
+      url += `&category=${category}`;
+    }
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
