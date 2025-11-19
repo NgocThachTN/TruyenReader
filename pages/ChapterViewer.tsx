@@ -81,13 +81,18 @@ const ChapterViewer: React.FC = () => {
     const decodedUrl = decodeURIComponent(apiUrl);
     const allChapters = comic.chapters[0]?.server_data || [];
 
+    // Sort chapters: newest (largest number) to oldest (smallest number)
+    allChapters.sort(
+      (a, b) => parseFloat(b.chapter_name) - parseFloat(a.chapter_name)
+    );
+
     const currentIndex = allChapters.findIndex(
       (c) => c.chapter_api_data === decodedUrl
     );
 
     if (currentIndex !== -1) {
-      setNextChapter(allChapters[currentIndex + 1] || null);
-      setPrevChapter(allChapters[currentIndex - 1] || null);
+      setNextChapter(allChapters[currentIndex - 1] || null);
+      setPrevChapter(allChapters[currentIndex + 1] || null);
     }
   }, [comic, apiUrl]);
 
