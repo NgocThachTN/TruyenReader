@@ -122,7 +122,7 @@ const ComicDetail: React.FC = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-4 mb-6">
+            <div className="flex flex-wrap justify-center md:justify-start gap-4 mb-4">
               {comic.chapters[0]?.server_data[0] && (
                 <button
                   onClick={() =>
@@ -153,7 +153,7 @@ const ComicDetail: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-2">
           {/* Content - Order 2 on Desktop (Right), Order 1 on Mobile (Top) */}
           <div className="lg:col-span-2 lg:order-2">
             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
