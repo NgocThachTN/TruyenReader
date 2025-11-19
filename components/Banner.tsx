@@ -55,7 +55,7 @@ const Banner: React.FC<BannerProps> = ({ comics, domain }) => {
               style={{ animationDelay: "0.1s" }}
             >
               <span className="px-2 py-0.5 md:px-3 md:py-1 text-[9px] md:text-xs font-bold uppercase tracking-widest bg-rose-600 text-white inline-block">
-                Tiêu Biểu
+                MỚI CẬP NHẬT
               </span>
             </div>
 
