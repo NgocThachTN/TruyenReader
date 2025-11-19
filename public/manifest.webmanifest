@@ -4,8 +4,8 @@
   "description": "Đọc truyện tranh online - Ứng dụng đọc truyện hiện đại và tiện lợi",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
   "orientation": "portrait-primary",
   "icons": [
     {   
