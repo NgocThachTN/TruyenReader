@@ -113,9 +113,9 @@ const ComicDetail: React.FC = () => {
                   Tác Giả
                 </p>
                 <p className="text-white font-medium">
-                  {comic.author[0] !== "Đang cập nhật"
+                  {comic.author[0] !== "Đang cập nhật" && comic.author[0] !== ""
                     ? comic.author.join(", ")
-                    : "Unknown"}
+                    : "Đang cập nhật"}
                 </p>
               </div>
               <div className="text-center md:text-left border-l border-neutral-800 md:pl-8">
