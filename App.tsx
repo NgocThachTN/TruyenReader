@@ -8,7 +8,7 @@ import Search from './pages/Search';
 import CategoryList from './pages/CategoryList';
 import CategoryDetail from './pages/CategoryDetail';
 import ComicList from './pages/ComicList';
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/react"
 
 
 const Layout = ({ children }: { children?: React.ReactNode }) => {
