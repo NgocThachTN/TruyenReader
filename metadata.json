@@ -1,0 +1,5 @@
+{
+  "name": "OTruyen Reader",
+  "description": "A modern, responsive comic reader application using the OTruyen API to browse, view details, and read comics.",
+  "requestFramePermissions": []
+}
