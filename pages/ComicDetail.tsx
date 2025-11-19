@@ -21,6 +21,12 @@ const ComicDetail: React.FC = () => {
       setLoading(true);
       try {
         const result = await fetchComicDetail(slug);
+        // Sort chapters from newest (highest number) to oldest (lowest number)
+        result.data.item.chapters.forEach((server) => {
+          server.server_data.sort((a, b) => {
+            return parseFloat(b.chapter_name) - parseFloat(a.chapter_name);
+          });
+        });
         setComic(result.data.item);
         setDomain(result.data.APP_DOMAIN_CDN_IMAGE);
       } catch (err) {
