@@ -1,4 +1,4 @@
-# OTruyen Reader
+# TruyenReader
 
 A modern, responsive manga reading web application built with React and TypeScript, utilizing the OTruyen API. This project was developed with the full-assistance of Gemini 3 Pro.
 
