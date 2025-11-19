@@ -63,7 +63,7 @@
     {
       "name": "Trang chủ",
       "short_name": "Home",
-      "description": "Mở trang chủ OTruyen",
+      "description": "Mở trang chủ",
       "url": "/",
       "icons": [
         { "src": "/icon-96x96.svg", "sizes": "96x96", "type": "image/svg+xml" }

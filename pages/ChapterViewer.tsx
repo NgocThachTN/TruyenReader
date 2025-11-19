@@ -28,6 +28,8 @@ const ChapterViewer: React.FC = () => {
 
   useEffect(() => {
     const controlNavbar = () => {
+      if (readingMode === "single") return; // Disable scroll control in single mode
+
       const currentScrollY = window.scrollY;
 
       if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
@@ -42,7 +44,7 @@ const ChapterViewer: React.FC = () => {
 
     window.addEventListener("scroll", controlNavbar);
     return () => window.removeEventListener("scroll", controlNavbar);
-  }, []);
+  }, [readingMode]);
 
   useEffect(() => {
     if (!apiUrl) return;
@@ -170,7 +172,9 @@ const ChapterViewer: React.FC = () => {
     <div className="min-h-screen bg-slate-950 flex flex-col">
       {/* Control Bar */}
       <div
-        className={`sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800 py-1.5 px-3 flex gap-3 justify-between items-center transition-transform duration-300 ${
+        className={`${
+          readingMode === "single" ? "fixed w-full" : "sticky"
+        } top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800 py-1.5 px-3 flex gap-3 justify-between items-center transition-transform duration-300 ${
           showNav ? "translate-y-0" : "-translate-y-full"
         }`}
       >
@@ -356,7 +360,11 @@ const ChapterViewer: React.FC = () => {
       </div>
 
       {/* Reader Area */}
-      <div className="flex-grow w-full max-w-4xl mx-auto bg-black min-h-screen">
+      <div
+        className={`flex-grow w-full mx-auto bg-black min-h-screen ${
+          readingMode === "scroll" ? "max-w-4xl" : ""
+        }`}
+      >
         {readingMode === "scroll" ? (
           // Scroll Mode
           <div className="flex flex-col">
@@ -372,25 +380,38 @@ const ChapterViewer: React.FC = () => {
             ))}
           </div>
         ) : (
-          // Single Page Mode
+          // Single Page Mode - Full Screen Optimization
           <div
-            className="flex flex-col items-center justify-center min-h-[80vh] p-4"
+            className="flex flex-col items-center justify-center h-[100dvh] w-full relative overflow-hidden touch-manipulation"
             onClick={(e) => {
-              // Click left side to go prev, right side to go next
               const width = e.currentTarget.clientWidth;
               const clickX = e.nativeEvent.offsetX;
-              if (clickX < width / 2) handlePageChange("prev");
-              else handlePageChange("next");
+
+              // Divide screen into zones: 30% Left | 40% Center | 30% Right
+              const zoneWidth = width * 0.3;
+
+              if (clickX < zoneWidth) {
+                handlePageChange("prev");
+              } else if (clickX > width - zoneWidth) {
+                handlePageChange("next");
+              } else {
+                setShowNav(!showNav);
+              }
             }}
           >
-            <div className="relative w-full max-h-screen flex justify-center">
-              <img
-                src={images[currentPage]}
-                alt={`Trang ${currentPage + 1}`}
-                className="max-w-full max-h-[85vh] object-contain"
-              />
-            </div>
-            <div className="mt-4 text-slate-400 text-sm">
+            <img
+              src={images[currentPage]}
+              alt={`Trang ${currentPage + 1}`}
+              className="max-w-full max-h-full object-contain select-none"
+              draggable={false}
+            />
+
+            {/* Page Counter Overlay - Only show when nav is visible */}
+            <div
+              className={`absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-1.5 rounded-full text-sm backdrop-blur-md border border-white/10 transition-opacity duration-300 ${
+                showNav ? "opacity-100" : "opacity-0 pointer-events-none"
+              }`}
+            >
               Trang {currentPage + 1} / {images.length}
             </div>
           </div>
@@ -398,72 +419,78 @@ const ChapterViewer: React.FC = () => {
       </div>
 
       {/* Navigation Footer */}
-      <div className="bg-slate-900 border-t border-slate-800 py-6">
-        <div className="container mx-auto px-4 flex flex-col items-center gap-4">
-          <div className="flex items-center gap-4 w-full justify-center max-w-md">
-            <button
-              onClick={() => prevChapter && handleChapterChange(prevChapter)}
-              disabled={!prevChapter}
-              className={`flex-1 px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
-                prevChapter
-                  ? "bg-slate-800 hover:bg-slate-700 text-white"
-                  : "bg-slate-800/50 text-slate-500 cursor-not-allowed"
-              }`}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-5 h-5"
+      {(readingMode === "scroll" || showNav) && (
+        <div
+          className={`bg-slate-900 border-t border-slate-800 py-2 ${
+            readingMode === "single" ? "fixed bottom-0 left-0 right-0 z-40" : ""
+          }`}
+        >
+          <div className="container mx-auto px-4 flex flex-col items-center gap-2">
+            <div className="flex items-center gap-4 w-full justify-center max-w-md">
+              <button
+                onClick={() => prevChapter && handleChapterChange(prevChapter)}
+                disabled={!prevChapter}
+                className={`flex-1 px-3 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors ${
+                  prevChapter
+                    ? "bg-slate-800 hover:bg-slate-700 text-white"
+                    : "bg-slate-800/50 text-slate-500 cursor-not-allowed"
+                }`}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 19.5 8.25 12l7.5-7.5"
-                />
-              </svg>
-              Chương Trước
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 19.5 8.25 12l7.5-7.5"
+                  />
+                </svg>
+                Chương Trước
+              </button>
 
-            <button
-              onClick={() => nextChapter && handleChapterChange(nextChapter)}
-              disabled={!nextChapter}
-              className={`flex-1 px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
-                nextChapter
-                  ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-                  : "bg-slate-800/50 text-slate-500 cursor-not-allowed"
-              }`}
-            >
-              Chương Sau
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-5 h-5"
+              <button
+                onClick={() => nextChapter && handleChapterChange(nextChapter)}
+                disabled={!nextChapter}
+                className={`flex-1 px-3 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors ${
+                  nextChapter
+                    ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+                    : "bg-slate-800/50 text-slate-500 cursor-not-allowed"
+                }`}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                />
-              </svg>
-            </button>
+                Chương Sau
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {comic && (
+              <Link
+                to={`/comic/${comic.slug}`}
+                className="text-slate-500 hover:text-emerald-400 text-xs mt-0"
+              >
+                Quay lại {comic.name}
+              </Link>
+            )}
           </div>
-
-          {comic && (
-            <Link
-              to={`/comic/${comic.slug}`}
-              className="text-slate-500 hover:text-emerald-400 text-sm mt-2"
-            >
-              Quay lại {comic.name}
-            </Link>
-          )}
         </div>
-      </div>
+      )}
     </div>
   );
 };
