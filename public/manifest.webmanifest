@@ -5,7 +5,7 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
-  "theme_color": "#10b981",
+  "theme_color": "#0f172a",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -65,15 +65,18 @@
       "short_name": "Home",
       "description": "Mở trang chủ OTruyen",
       "url": "/",
-      "icons": [{ "src": "/icon-96x96.svg", "sizes": "96x96", "type": "image/svg+xml" }]
+      "icons": [
+        { "src": "/icon-96x96.svg", "sizes": "96x96", "type": "image/svg+xml" }
+      ]
     },
     {
       "name": "Tìm kiếm",
       "short_name": "Search",
       "description": "Tìm kiếm truyện",
       "url": "/search",
-      "icons": [{ "src": "/icon-96x96.svg", "sizes": "96x96", "type": "image/svg+xml" }]
+      "icons": [
+        { "src": "/icon-96x96.svg", "sizes": "96x96", "type": "image/svg+xml" }
+      ]
     }
   ]
 }
-

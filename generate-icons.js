@@ -1,15 +1,16 @@
 // Script để tạo icon placeholder cho PWA
 // Chạy: node generate-icons.js
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // SVG template với logo OTruyen
-const svgTemplate = (size) => `
+const svgTemplate = (size) =>
+  `
 <svg width="${size}" height="${size}" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <!-- Background -->
   <rect width="512" height="512" fill="#0f172a" rx="80"/>
@@ -53,35 +54,34 @@ const svgTemplate = (size) => `
 const sizes = [16, 32, 72, 96, 128, 144, 152, 192, 384, 512];
 
 // Create public directory if it doesn't exist
-const publicDir = path.join(__dirname, 'public');
+const publicDir = path.join(__dirname, "public");
 if (!fs.existsSync(publicDir)) {
   fs.mkdirSync(publicDir, { recursive: true });
 }
 
-console.log('📦 Generating PWA icons...\n');
+console.log("📦 Generating PWA icons...\n");
 
-sizes.forEach(size => {
+sizes.forEach((size) => {
   const svgContent = svgTemplate(size);
   const filename = `icon-${size}x${size}.svg`;
   const filepath = path.join(publicDir, filename);
-  
+
   fs.writeFileSync(filepath, svgContent);
   console.log(`✅ Created ${filename}`);
 });
 
 // Also create favicon
-fs.writeFileSync(path.join(publicDir, 'favicon.ico'), svgTemplate(32));
-console.log('✅ Created favicon.ico');
+fs.writeFileSync(path.join(publicDir, "favicon.ico"), svgTemplate(32));
+console.log("✅ Created favicon.ico");
 
-console.log('\n🎉 All icons generated successfully!');
-console.log('\n⚠️  Note: These are SVG placeholder icons.');
-console.log('For production, convert them to PNG using:');
-console.log('  - Online tool: https://realfavicongenerator.net/');
-console.log('  - Or use the create-icons.html tool with your custom logo');
-console.log('\n📝 Next steps:');
-console.log('  1. Open create-icons.html in your browser');
-console.log('  2. Upload your custom logo (512x512 PNG recommended)');
-console.log('  3. Download all generated PNG icons');
-console.log('  4. Replace the SVG files in public/ folder');
-console.log('  5. Build and deploy your app!');
-
+console.log("\n🎉 All icons generated successfully!");
+console.log("\n⚠️  Note: These are SVG placeholder icons.");
+console.log("For production, convert them to PNG using:");
+console.log("  - Online tool: https://realfavicongenerator.net/");
+console.log("  - Or use the create-icons.html tool with your custom logo");
+console.log("\n📝 Next steps:");
+console.log("  1. Open create-icons.html in your browser");
+console.log("  2. Upload your custom logo (512x512 PNG recommended)");
+console.log("  3. Download all generated PNG icons");
+console.log("  4. Replace the SVG files in public/ folder");
+console.log("  5. Build and deploy your app!");
