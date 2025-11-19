@@ -14,6 +14,7 @@ const ComicDetail: React.FC = () => {
   const [isDescExpanded, setIsDescExpanded] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     if (!slug) return;
 
     const loadDetail = async () => {
