@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo Icon PWA - OTruyen Reader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 800px;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+        
+        .upload-area {
+            border: 2px dashed #475569;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+        
+        .upload-area:hover {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .upload-area.dragover {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.2);
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .preview-item {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .preview-item canvas {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: white;
+        }
+        
+        .preview-item .size {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+        
+        .download-btn {
+            background: #475569;
+            margin-top: 10px;
+        }
+        
+        .instructions {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .instructions h3 {
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            color: #cbd5e1;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Tạo Icon PWA</h1>
+        <p class="subtitle">Upload logo của bạn để tự động tạo tất cả icon cần thiết</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <p><strong>Click để chọn file</strong> hoặc kéo thả file vào đây</p>
+            <p style="color: #94a3b8; margin-top: 10px; font-size: 0.875rem;">
+                Khuyến nghị: PNG 512x512px, nền trong suốt
+            </p>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+        
+        <div id="previewSection" style="display: none;">
+            <h3 style="margin-bottom: 15px;">👀 Preview & Download</h3>
+            <div class="preview-grid" id="previewGrid"></div>
+            <button class="btn" id="downloadAllBtn" style="margin-top: 20px; width: 100%;">
+                📦 Download All Icons (ZIP)
+            </button>
+        </div>
+        
+        <div class="instructions">
+            <h3>📝 Hướng dẫn:</h3>
+            <ol>
+                <li>Upload logo của bạn (tốt nhất là file PNG 512x512px)</li>
+                <li>Chờ hệ thống tự động tạo tất cả icon</li>
+                <li>Download từng icon hoặc tải tất cả bằng nút "Download All"</li>
+                <li>Đặt tất cả icon vào thư mục <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">public/</code> của project</li>
+                <li>Build và deploy ứng dụng</li>
+                <li>Trên Android Chrome, mở website và chọn "Add to Home screen"</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const sizes = [16, 32, 72, 96, 128, 144, 152, 192, 384, 512];
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewSection = document.getElementById('previewSection');
+        const previewGrid = document.getElementById('previewGrid');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        
+        let generatedIcons = [];
+
+        // Upload area click
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                processImage(file);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                processImage(file);
+            }
+        });
+
+        function processImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    generateIcons(img);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function generateIcons(img) {
+            generatedIcons = [];
+            previewGrid.innerHTML = '';
+            
+            sizes.forEach(size => {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw with high quality
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, size, size);
+                
+                // Create preview item
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                
+                const previewCanvas = canvas.cloneNode();
+                const previewCtx = previewCanvas.getContext('2d');
+                previewCtx.drawImage(canvas, 0, 0);
+                
+                const sizeLabel = document.createElement('div');
+                sizeLabel.className = 'size';
+                sizeLabel.textContent = `${size}x${size}`;
+                
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'btn download-btn';
+                downloadBtn.textContent = '⬇️ Download';
+                downloadBtn.onclick = () => downloadIcon(canvas, size);
+                
+                previewItem.appendChild(previewCanvas);
+                previewItem.appendChild(sizeLabel);
+                previewItem.appendChild(downloadBtn);
+                previewGrid.appendChild(previewItem);
+                
+                // Store for batch download
+                generatedIcons.push({ canvas, size });
+            });
+            
+            previewSection.style.display = 'block';
+        }
+
+        function downloadIcon(canvas, size) {
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `icon-${size}x${size}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        downloadAllBtn.addEventListener('click', async () => {
+            // Since we can't create ZIP in pure client-side easily,
+            // we'll download them one by one with a small delay
+            for (const icon of generatedIcons) {
+                await new Promise(resolve => {
+                    downloadIcon(icon.canvas, icon.size);
+                    setTimeout(resolve, 300);
+                });
+            }
+            alert('✅ Tất cả icon đã được download! Hãy kiểm tra thư mục Downloads của bạn.');
+        });
+    </script>
+</body>
+</html>
+

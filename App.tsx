@@ -8,6 +8,7 @@ import Search from './pages/Search';
 import CategoryList from './pages/CategoryList';
 import CategoryDetail from './pages/CategoryDetail';
 import ComicList from './pages/ComicList';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { Analytics } from "@vercel/analytics/react"
 
 
@@ -45,6 +46,7 @@ const App: React.FC = () => {
           <Route path="/chapter/:slug/:apiUrl" element={<ChapterViewer />} />
         </Routes>
       </Layout>
+      <PWAInstallPrompt />
       <Analytics />
     </Router>
   );

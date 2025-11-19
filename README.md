@@ -18,6 +18,7 @@ OTruyen Reader provides a seamless interface for users to discover, browse, and 
   - **Single Page Mode**: Page-by-page viewing with keyboard navigation (Arrow keys).
   - **Quick Navigation**: Dropdown menu to jump between chapters instantly.
 - **Responsive Design**: Optimized for both desktop and mobile devices, including a collapsible navigation menu.
+- **PWA Support**: Install as an app on Android/iOS devices with offline caching capabilities.
 
 ## Technologies Used
 
@@ -51,6 +52,28 @@ OTruyen Reader provides a seamless interface for users to discover, browse, and 
    ```
 
 5. Open your browser and visit `http://localhost:3000` (or the port shown in your terminal).
+
+## PWA Installation (Progressive Web App)
+
+### Cài đặt trên Android:
+
+1. Mở website trên trình duyệt Chrome, Edge, hoặc Samsung Internet
+2. Nhấn vào menu (⋮) ở góc phải trên
+3. Chọn **"Add to Home screen"** hoặc **"Thêm vào màn hình chính"**
+4. Đặt tên cho ứng dụng và nhấn **"Add"**
+5. Icon ứng dụng sẽ xuất hiện trên màn hình chính của bạn!
+
+### Tính năng PWA:
+
+- ✨ Hoạt động offline với Service Worker
+- 📦 Cache thông minh cho API và hình ảnh
+- 🎨 Chạy như ứng dụng native (không có thanh địa chỉ)
+- ⚡ Tải trang nhanh hơn với caching
+- 🔄 Tự động cập nhật khi có phiên bản mới
+
+### Tạo Icon cho PWA:
+
+Xem hướng dẫn chi tiết trong file [`PWA_SETUP.md`](./PWA_SETUP.md) hoặc sử dụng công cụ tạo icon tại `create-icons.html`.
 
 ## Development
 
