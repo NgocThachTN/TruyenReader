@@ -1,5 +1,5 @@
 {
-  "name": "OTruyen Reader",
-  "description": "A modern, responsive comic reader application using the OTruyen API to browse, view details, and read comics.",
+  "name": "TruyenReader - Đọc truyện tranh online",
+  "description": "Đọc truyện tranh online - Ứng dụng đọc truyện hiện đại và tiện lợi",
   "requestFramePermissions": []
 }

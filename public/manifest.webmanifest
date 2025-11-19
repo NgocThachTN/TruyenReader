@@ -1,6 +1,6 @@
 {
-  "name": "OTruyen Reader",
-  "short_name": "OTruyen",
+  "name": "TruyenReader - Đọc truyện tranh online",
+  "short_name": "TruyenReader",
   "description": "Đọc truyện tranh online - Ứng dụng đọc truyện hiện đại và tiện lợi",
   "start_url": "/",
   "display": "standalone",
@@ -8,7 +8,7 @@
   "theme_color": "#0f172a",
   "orientation": "portrait-primary",
   "icons": [
-    {
+    {   
       "src": "/icon-72x72.svg",
       "sizes": "72x72",
       "type": "image/svg+xml",
