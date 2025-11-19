@@ -32,188 +32,157 @@ const Banner: React.FC<BannerProps> = ({ comics, domain }) => {
   const imageUrl = getImageUrl(domain, currentComic.thumb_url);
 
   return (
-    <div className="relative w-full h-[550px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-2xl mb-10 group shadow-2xl shadow-black/50">
+    <div className="relative w-full h-[480px] md:h-[500px] lg:h-[600px] overflow-hidden mb-8 md:mb-12 group border border-neutral-800 bg-neutral-900">
       {/* Background Image with Blur */}
       <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-black/70 z-10"></div>
         <img
           src={imageUrl}
           alt="Background"
-          className="w-full h-full object-cover blur-md opacity-40 animate-ken-burns"
-          key={imageUrl} // Force re-render for animation
+          className="w-full h-full object-cover blur-xl opacity-60 scale-110"
+          key={`bg-${imageUrl}`}
         />
-        {/* Complex Gradient Overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/50 to-slate-900/30" />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/60 to-transparent" />
       </div>
 
       {/* Content */}
-      <div className="absolute inset-0 flex items-center">
-        <div className="container mx-auto px-4 md:px-10 flex flex-col-reverse md:flex-row items-center md:items-end justify-between h-full pb-12 md:pb-16 pt-20 gap-4 md:gap-8">
+      <div className="absolute inset-0 z-20 flex items-center">
+        {/* Reduced pt-14 to pt-8 and pb-6 to pb-4 to shift content up */}
+        <div className="container mx-auto px-4 md:px-10 flex flex-col-reverse md:flex-row items-center md:items-end justify-center md:justify-between h-full pb-4 md:pb-12 pt-8 md:pt-20 gap-3 md:gap-8">
           {/* Text Info */}
-          <div
-            className="flex-1 w-full max-w-2xl z-10 flex flex-col justify-end h-full text-center md:text-left items-center md:items-start"
-            key={currentComic._id}
-          >
+          <div className="flex-1 w-full max-w-2xl flex flex-col justify-start md:justify-end h-auto md:h-full text-center md:text-left items-center md:items-start z-20 mt-1 md:mt-0">
             <div
-              className="flex flex-wrap justify-center md:justify-start gap-2 mb-3 md:mb-4 opacity-0 animate-fade-in-up"
+              className="mb-2 md:mb-4 opacity-0 animate-fade-in-up"
               style={{ animationDelay: "0.1s" }}
             >
-              {currentComic.category.slice(0, 3).map((cat, idx) => (
-                <span
-                  key={`${cat.id}-${idx}`}
-                  className="px-2 py-1 md:px-3 md:py-1 text-[10px] md:text-xs font-bold uppercase tracking-wider bg-emerald-500 text-white rounded shadow-lg shadow-emerald-500/20"
-                >
-                  {cat.name}
-                </span>
-              ))}
+              <span className="px-2 py-0.5 md:px-3 md:py-1 text-[9px] md:text-xs font-bold uppercase tracking-widest bg-rose-600 text-white inline-block">
+                Tiêu Biểu
+              </span>
             </div>
 
             <h2
-              className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-3 md:mb-4 leading-tight drop-shadow-2xl line-clamp-2 opacity-0 animate-fade-in-up"
+              className="text-2xl md:text-6xl lg:text-7xl font-black text-white mb-2 md:mb-4 leading-tight md:leading-none uppercase tracking-tighter opacity-0 animate-fade-in-up line-clamp-2"
               style={{ animationDelay: "0.2s" }}
             >
               {currentComic.name}
             </h2>
 
             <div
-              className="flex flex-wrap justify-center md:justify-start items-center gap-3 md:gap-6 mb-6 md:mb-8 text-slate-200 text-xs md:text-base font-medium opacity-0 animate-fade-in-up"
+              className="flex flex-wrap justify-center md:justify-start gap-2 mb-3 md:mb-6 opacity-0 animate-fade-in-up"
               style={{ animationDelay: "0.3s" }}
             >
-              <span className="flex items-center gap-1.5 md:gap-2 bg-black/30 px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-full backdrop-blur-sm border border-white/10">
-                <svg
-                  className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              {currentComic.category.slice(0, 3).map((cat, idx) => (
+                <span
+                  key={`${cat.id}-${idx}`}
+                  className="px-1.5 py-0.5 md:px-2 md:py-1 text-[8px] md:text-[10px] font-bold uppercase tracking-wider border border-neutral-500 text-neutral-300"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                {new Date(currentComic.updatedAt).toLocaleDateString()}
+                  {cat.name}
+                </span>
+              ))}
+            </div>
+
+            <div
+              className="flex flex-wrap justify-center md:justify-start items-center gap-3 md:gap-6 mb-4 md:mb-8 text-neutral-400 text-[10px] md:text-xs font-mono opacity-0 animate-fade-in-up"
+              style={{ animationDelay: "0.4s" }}
+            >
+              <span className="flex items-center gap-1.5 md:gap-2">
+                <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-rose-600 rounded-full"></span>
+                CẬP NHẬT:{" "}
+                {new Date(currentComic.updatedAt).toLocaleDateString("vi-VN")}
               </span>
-              <span className="flex items-center gap-1.5 md:gap-2 bg-black/30 px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-full backdrop-blur-sm border border-white/10">
-                <svg
-                  className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  />
-                </svg>
+              <span className="flex items-center gap-1.5 md:gap-2">
+                <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-neutral-500 rounded-full"></span>
+                CHAP MỚI NHẤT:{" "}
                 {currentComic.chaptersLatest?.[0]?.chapter_name
-                  ? `Chương ${currentComic.chaptersLatest[0].chapter_name}`
-                  : "Đang cập nhật"}
+                  ? `CHAP ${currentComic.chaptersLatest[0].chapter_name}`
+                  : "N/A"}
               </span>
             </div>
 
             <div
-              className="w-full md:w-auto flex gap-3 md:gap-4 opacity-0 animate-fade-in-up"
-              style={{ animationDelay: "0.4s" }}
+              className="flex gap-3 md:gap-4 opacity-0 animate-fade-in-up"
+              style={{ animationDelay: "0.5s" }}
             >
               <Link
                 to={`/comic/${currentComic.slug}`}
-                className="flex-1 md:flex-none inline-flex justify-center items-center gap-2 md:gap-3 px-6 py-3 md:px-8 md:py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-base md:text-lg transition-all hover:shadow-xl hover:shadow-emerald-500/20 transform hover:-translate-y-1"
+                className="px-6 py-2.5 md:px-8 md:py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs md:text-sm uppercase tracking-wider transition-all hover:-translate-y-1 border border-rose-600"
               >
                 Đọc Ngay
-                <svg
-                  className="w-4 h-4 md:w-5 md:h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </svg>
               </Link>
               <Link
                 to={`/comic/${currentComic.slug}`}
-                className="flex-1 md:flex-none inline-flex justify-center items-center gap-2 px-6 py-3 md:px-8 md:py-4 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-base md:text-lg transition-all backdrop-blur-sm border border-white/10"
+                className="px-6 py-2.5 md:px-8 md:py-3 bg-transparent hover:bg-white hover:text-black text-white font-bold text-xs md:text-sm uppercase tracking-wider transition-all hover:-translate-y-1 border border-white"
               >
                 Chi Tiết
               </Link>
             </div>
           </div>
 
-          {/* Hero Image (Desktop + Mobile) */}
+          {/* Hero Image - Sharp floating card */}
           <div
-            className="w-[180px] md:w-[260px] lg:w-[320px] flex-shrink-0 relative z-10 perspective-1000 opacity-0 animate-fade-in-right mb-2 md:mb-0"
+            className="w-[130px] md:w-[280px] lg:w-[340px] flex-shrink-0 relative z-10 opacity-0 animate-fade-in-right mb-2 md:mb-0"
             style={{ animationDelay: "0.2s" }}
             key={`${currentComic._id}-hero`}
           >
-            <div className="relative w-full aspect-[2/3] rounded-xl overflow-hidden shadow-2xl border-2 md:border-4 border-white/10 transform rotate-y-12 hover:rotate-y-0 transition-transform duration-500 group-hover:scale-105 bg-slate-800">
+            <div className="relative w-full aspect-[2/3] bg-neutral-800 shadow-[8px_8px_0px_0px_rgba(225,29,72,0.2)] md:shadow-[20px_20px_0px_0px_rgba(225,29,72,0.2)] border border-neutral-700">
               <img
                 src={imageUrl}
                 alt={currentComic.name}
                 className="w-full h-full object-cover"
               />
-              {/* Shine effect */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              <div className="absolute inset-0 ring-1 ring-inset ring-white/10"></div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Navigation Buttons */}
+      {/* Minimal Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center backdrop-blur-sm transition-colors border border-white/10 opacity-0 group-hover:opacity-100"
+        className="absolute left-0 top-0 bottom-0 w-8 md:w-24 flex items-center justify-center hover:bg-gradient-to-r hover:from-black/50 to-transparent text-white/30 hover:text-white transition-all z-30"
       >
         <svg
-          className="w-6 h-6"
+          className="w-5 h-5 md:w-10 md:h-10"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
           <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
+            strokeLinecap="square"
+            strokeLinejoin="miter"
+            strokeWidth={1}
             d="M15 19l-7-7 7-7"
           />
         </svg>
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center backdrop-blur-sm transition-colors border border-white/10 opacity-0 group-hover:opacity-100"
+        className="absolute right-0 top-0 bottom-0 w-8 md:w-24 flex items-center justify-center hover:bg-gradient-to-l hover:from-black/50 to-transparent text-white/30 hover:text-white transition-all z-30"
       >
         <svg
-          className="w-6 h-6"
+          className="w-5 h-5 md:w-10 md:h-10"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
           <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
+            strokeLinecap="square"
+            strokeLinejoin="miter"
+            strokeWidth={1}
             d="M9 5l7 7-7 7"
           />
         </svg>
       </button>
 
-      {/* Indicators */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+      {/* Minimal Line Indicators */}
+      <div className="absolute bottom-0 left-0 w-full flex">
         {comics.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`w-2 h-2 rounded-full transition-all ${
+            className={`flex-1 h-1 transition-all ${
               idx === currentIndex
-                ? "bg-emerald-500 w-6"
-                : "bg-white/50 hover:bg-white"
+                ? "bg-rose-600"
+                : "bg-neutral-800 hover:bg-neutral-700"
             }`}
           />
         ))}

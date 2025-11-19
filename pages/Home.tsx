@@ -18,7 +18,6 @@ const Home: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Fetch Banner Data and lists in parallel
         const [bannerResult, ongoingResult, newResult, completedResult, mangaResult] = await Promise.all([
             fetchHomeData(),
             fetchComicList('dang-phat-hanh', 1),
@@ -40,131 +39,108 @@ const Home: React.FC = () => {
     };
 
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) return <Spinner />;
   
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-10 text-center">
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg inline-block">
+      <div className="container mx-auto px-4 py-10 text-center bg-neutral-950 h-screen">
+        <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 font-medium inline-block">
           {error}
         </div>
       </div>
     );
   }
 
+  const SectionHeader = ({ title, subtitle, link }: { title: string, subtitle: string, link: string }) => (
+    <div className="flex justify-between items-end mb-8 border-b border-neutral-800 pb-4">
+        <div>
+            <h2 className="text-2xl font-bold text-white uppercase tracking-wide mb-1 flex items-center gap-3">
+              <span className="w-1.5 h-6 bg-rose-600 block"></span>
+              {title}
+            </h2>
+            <p className="text-neutral-500 text-xs tracking-widest uppercase pl-4.5">{subtitle}</p>
+        </div>
+        <Link to={link} className="text-neutral-400 hover:text-rose-500 font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-colors group">
+            Xem Tất Cả
+            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="square" strokeLinejoin="miter" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+        </Link>
+    </div>
+  );
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Banner Section */}
-      {bannerData && (
-          <Banner comics={bannerData.items} domain={bannerData.APP_DOMAIN_CDN_IMAGE} />
-      )}
+    <div className="min-h-screen bg-neutral-950 font-sans pb-12">
+      <div className="container mx-auto px-4 py-8">
+        {/* Banner Section */}
+        {bannerData && (
+            <Banner comics={bannerData.items} domain={bannerData.APP_DOMAIN_CDN_IMAGE} />
+        )}
 
-      {/* Manga Section */}
-      {mangaComics && (
-          <div className="mt-12">
-            <div className="flex justify-between items-end mb-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Manga</h1>
-                    <p className="text-slate-400">Truyện Manga Hot</p>
-                </div>
-                <Link to="/category/manga" className="text-emerald-400 hover:text-emerald-300 font-medium text-sm flex items-center gap-1">
-                    Xem Tất Cả
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                </Link>
+        {/* Manga Section */}
+        {mangaComics && (
+            <div className="mt-16">
+              <SectionHeader title="Manga Hot" subtitle="Truyện Tranh Nhật Bản" link="/category/manga" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                  {mangaComics.items.map((item) => (
+                  <ComicCard 
+                      key={item._id} 
+                      comic={item} 
+                      domain={mangaComics.APP_DOMAIN_CDN_IMAGE} 
+                  />
+                  ))}
+              </div>
             </div>
+        )}
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-                {mangaComics.items.map((item) => (
-                <ComicCard 
-                    key={item._id} 
-                    comic={item} 
-                    domain={mangaComics.APP_DOMAIN_CDN_IMAGE} 
-                />
-                ))}
+        {/* New Comics Section */}
+        {newComics && (
+            <div className="mt-16">
+              <SectionHeader title="Mới Cập Nhật" subtitle="Chương Mới Nhất" link="/list/truyen-moi" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                  {newComics.items.map((item) => (
+                  <ComicCard 
+                      key={item._id} 
+                      comic={item} 
+                      domain={newComics.APP_DOMAIN_CDN_IMAGE} 
+                  />
+                  ))}
+              </div>
             </div>
-          </div>
-      )}
+        )}
 
-      {/* New Comics Section */}
-      {newComics && (
-          <div className="mt-12">
-            <div className="flex justify-between items-end mb-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Truyện Mới Cập Nhật</h1>
-                    <p className="text-slate-400">Truyện vừa được cập nhật</p>
-                </div>
-                <Link to="/list/truyen-moi" className="text-emerald-400 hover:text-emerald-300 font-medium text-sm flex items-center gap-1">
-                    Xem Tất Cả
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                </Link>
+        {/* Ongoing Comics Section */}
+        {ongoingComics && (
+            <div className="mt-16">
+              <SectionHeader title="Đang Phát Hành" subtitle="Truyện Hot Hiện Nay" link="/list/dang-phat-hanh" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                  {ongoingComics.items.map((item) => (
+                  <ComicCard 
+                      key={item._id} 
+                      comic={item} 
+                      domain={ongoingComics.APP_DOMAIN_CDN_IMAGE} 
+                  />
+                  ))}
+              </div>
             </div>
+        )}
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-                {newComics.items.map((item) => (
-                <ComicCard 
-                    key={item._id} 
-                    comic={item} 
-                    domain={newComics.APP_DOMAIN_CDN_IMAGE} 
-                />
-                ))}
+        {/* Completed Comics Section */}
+        {completedComics && (
+            <div className="mt-16">
+              <SectionHeader title="Đã Hoàn Thành" subtitle="Trọn Bộ" link="/list/hoan-thanh" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                  {completedComics.items.map((item) => (
+                  <ComicCard 
+                      key={item._id} 
+                      comic={item} 
+                      domain={completedComics.APP_DOMAIN_CDN_IMAGE} 
+                  />
+                  ))}
+              </div>
             </div>
-          </div>
-      )}
-
-      {/* Ongoing Comics Section */}
-      {ongoingComics && (
-          <div className="mt-12">
-            <div className="flex justify-between items-end mb-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Truyện Đang Phát Hành</h1>
-                    <p className="text-slate-400">Top truyện đang hot hiện nay</p>
-                </div>
-                <Link to="/list/dang-phat-hanh" className="text-emerald-400 hover:text-emerald-300 font-medium text-sm flex items-center gap-1">
-                    Xem Tất Cả
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                </Link>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-                {ongoingComics.items.map((item) => (
-                <ComicCard 
-                    key={item._id} 
-                    comic={item} 
-                    domain={ongoingComics.APP_DOMAIN_CDN_IMAGE} 
-                />
-                ))}
-            </div>
-          </div>
-      )}
-
-      {/* Completed Comics Section */}
-      {completedComics && (
-          <div className="mt-12">
-            <div className="flex justify-between items-end mb-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Truyện Đã Hoàn Thành</h1>
-                    <p className="text-slate-400">Truyện đã ra mắt trọn bộ</p>
-                </div>
-                <Link to="/list/hoan-thanh" className="text-emerald-400 hover:text-emerald-300 font-medium text-sm flex items-center gap-1">
-                    Xem Tất Cả
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                </Link>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-                {completedComics.items.map((item) => (
-                <ComicCard 
-                    key={item._id} 
-                    comic={item} 
-                    domain={completedComics.APP_DOMAIN_CDN_IMAGE} 
-                />
-                ))}
-            </div>
-          </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

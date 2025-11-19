@@ -42,8 +42,8 @@ const ComicList: React.FC = () => {
   
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-10 text-center">
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg inline-block">
+      <div className="container mx-auto px-4 py-10 text-center bg-neutral-950 min-h-screen">
+        <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 font-bold uppercase tracking-wider inline-block">
           {error}
         </div>
       </div>
@@ -55,7 +55,6 @@ const ComicList: React.FC = () => {
   const { pagination } = data.params;
   const totalPages = Math.ceil(pagination.totalItems / pagination.totalItemsPerPage);
 
-  // Generate page numbers to display
   const getPageNumbers = () => {
     const pages = [];
     const maxPagesToShow = 5;
@@ -76,52 +75,63 @@ const ComicList: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">{data.titlePage}</h1>
-        <p className="text-slate-400">Page {page} of {totalPages}</p>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
-        {data.items.map((item) => (
-          <ComicCard 
-            key={item._id} 
-            comic={item} 
-            domain={data.APP_DOMAIN_CDN_IMAGE} 
-          />
-        ))}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2">
-          <button
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-            className={`px-3 py-1 rounded-md ${page === 1 ? 'bg-slate-800 text-slate-600 cursor-not-allowed' : 'bg-slate-800 text-white hover:bg-emerald-600'}`}
-          >
-            Prev
-          </button>
-          
-          {getPageNumbers().map(p => (
-            <button
-              key={p}
-              onClick={() => handlePageChange(p)}
-              className={`px-3 py-1 rounded-md ${p === page ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-white hover:bg-slate-700'}`}
-            >
-              {p}
-            </button>
-          ))}
-          
-          <button
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
-            className={`px-3 py-1 rounded-md ${page === totalPages ? 'bg-slate-800 text-slate-600 cursor-not-allowed' : 'bg-slate-800 text-white hover:bg-emerald-600'}`}
-          >
-            Next
-          </button>
+    <div className="min-h-screen bg-neutral-950 font-sans pb-12">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-10 border-b border-neutral-800 pb-6">
+          <h1 className="text-3xl font-bold text-white mb-2 uppercase tracking-tight flex items-center gap-3">
+             <span className="w-2 h-8 bg-rose-600"></span>
+             {data.titlePage}
+          </h1>
+          <p className="text-neutral-500 text-sm tracking-widest uppercase pl-5">
+            Page <span className="text-rose-500 font-bold">{page}</span> of {totalPages}
+          </p>
         </div>
-      )}
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-12">
+          {data.items.map((item) => (
+            <ComicCard 
+              key={item._id} 
+              comic={item} 
+              domain={data.APP_DOMAIN_CDN_IMAGE} 
+            />
+          ))}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2">
+            <button
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+              className="px-4 py-2 bg-neutral-900 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-800 transition-colors border border-neutral-800 font-bold text-xs uppercase tracking-wider"
+            >
+              Prev
+            </button>
+            
+            {getPageNumbers().map(p => (
+              <button
+                key={p}
+                onClick={() => handlePageChange(p)}
+                className={`w-10 h-10 flex items-center justify-center transition-colors font-bold text-xs ${
+                  p === page 
+                    ? 'bg-rose-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.4)]' 
+                    : 'bg-neutral-900 text-neutral-400 hover:bg-neutral-800 border border-neutral-800'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+            
+            <button
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+              className="px-4 py-2 bg-neutral-900 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-800 transition-colors border border-neutral-800 font-bold text-xs uppercase tracking-wider"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

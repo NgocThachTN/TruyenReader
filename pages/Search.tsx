@@ -35,8 +35,8 @@ const Search: React.FC = () => {
   
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-10 text-center">
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg inline-block">
+      <div className="container mx-auto px-4 py-10 text-center bg-neutral-950 min-h-screen">
+        <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 font-bold uppercase tracking-wider inline-block">
           {error}
         </div>
       </div>
@@ -44,27 +44,39 @@ const Search: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Kết Quả Tìm Kiếm</h1>
-        <p className="text-slate-400">Kết quả cho "{keyword}"</p>
-      </div>
+    <div className="min-h-screen bg-neutral-950 font-sans pb-12">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-10 border-b border-neutral-800 pb-6">
+          <h1 className="text-3xl font-bold text-white mb-2 uppercase tracking-tight flex items-center gap-3">
+            <span className="w-2 h-8 bg-rose-600"></span>
+            Kết Quả Tìm Kiếm
+          </h1>
+          <p className="text-neutral-500 text-sm tracking-widest uppercase pl-5">
+            Kết quả cho <span className="text-white">"{keyword}"</span>
+          </p>
+        </div>
 
-      {data && data.items.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-          {data.items.map((item) => (
-            <ComicCard 
-              key={item._id} 
-              comic={item} 
-              domain={data.APP_DOMAIN_CDN_IMAGE} 
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center text-slate-500 py-10">
-          {keyword ? 'Không tìm thấy truyện nào phù hợp.' : 'Nhập từ khóa để tìm kiếm.'}
-        </div>
-      )}
+        {data && data.items.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {data.items.map((item) => (
+              <ComicCard 
+                key={item._id} 
+                comic={item} 
+                domain={data.APP_DOMAIN_CDN_IMAGE} 
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-neutral-500 py-20 flex flex-col items-center justify-center border border-neutral-800 bg-neutral-900/50">
+            <svg className="w-16 h-16 mb-4 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="square" strokeLinejoin="miter" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <p className="text-sm font-bold uppercase tracking-widest">
+                {keyword ? 'Không tìm thấy truyện nào phù hợp' : 'Nhập từ khóa để tìm kiếm'}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

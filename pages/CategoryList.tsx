@@ -28,8 +28,8 @@ const CategoryList: React.FC = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-10 text-center">
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg inline-block">
+      <div className="container mx-auto px-4 py-10 text-center bg-neutral-950 min-h-screen">
+        <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 font-bold uppercase tracking-wider inline-block">
           {error}
         </div>
       </div>
@@ -37,22 +37,28 @@ const CategoryList: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Thể loại</h1>
-        <p className="text-slate-400">Truyện theo từng thể loại</p>
-      </div>
+    <div className="min-h-screen bg-neutral-950 font-sans pb-12">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-10 border-b border-neutral-800 pb-6">
+          <h1 className="text-3xl font-bold text-white mb-2 uppercase tracking-tight flex items-center gap-3">
+            <span className="w-2 h-8 bg-rose-600"></span>
+            Thể loại
+          </h1>
+          <p className="text-neutral-500 text-sm tracking-widest uppercase pl-5">Khám phá kho truyện phong phú</p>
+        </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {categories.map((category) => (
-          <Link
-            key={category._id}
-            to={`/category/${category.slug}`}
-            className="bg-slate-800 hover:bg-slate-700 text-slate-200 p-4 rounded-lg transition-colors text-center font-medium border border-slate-700 hover:border-emerald-500/50 hover:text-emerald-400"
-          >
-            {category.name}
-          </Link>
-        ))}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {categories.map((category) => (
+            <Link
+              key={category._id}
+              to={`/category/${category.slug}`}
+              className="group bg-neutral-900 hover:bg-neutral-800 text-neutral-300 p-6 transition-all text-center font-bold text-sm uppercase tracking-wider border border-neutral-800 hover:border-rose-600 hover:text-white hover:-translate-y-1 relative overflow-hidden"
+            >
+              <span className="relative z-10">{category.name}</span>
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-600/0 to-rose-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

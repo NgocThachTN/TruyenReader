@@ -8,18 +8,18 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// SVG template với logo OTruyen
+// SVG template với logo OTruyen (Red Theme)
 const svgTemplate = (size) =>
   `
 <svg width="${size}" height="${size}" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <!-- Background -->
   <rect width="512" height="512" fill="#0f172a" rx="80"/>
   
-  <!-- Emerald gradient circle -->
+  <!-- Rose gradient circle -->
   <defs>
     <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#e11d48;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#be123c;stop-opacity:1" />
     </linearGradient>
   </defs>
   <circle cx="256" cy="256" r="180" fill="url(#grad1)" opacity="0.2"/>
@@ -28,11 +28,11 @@ const svgTemplate = (size) =>
   <g transform="translate(156, 156)">
     <!-- Book pages -->
     <rect x="20" y="40" width="160" height="180" fill="#e2e8f0" rx="8"/>
-    <rect x="20" y="40" width="160" height="180" fill="none" stroke="#10b981" stroke-width="4" rx="8"/>
+    <rect x="20" y="40" width="160" height="180" fill="none" stroke="#e11d48" stroke-width="4" rx="8"/>
     
     <!-- Book spine -->
-    <rect x="0" y="30" width="30" height="200" fill="#10b981" rx="4"/>
-    <rect x="0" y="30" width="30" height="200" fill="none" stroke="#059669" stroke-width="2" rx="4"/>
+    <rect x="0" y="30" width="30" height="200" fill="#e11d48" rx="4"/>
+    <rect x="0" y="30" width="30" height="200" fill="none" stroke="#be123c" stroke-width="2" rx="4"/>
     
     <!-- Page lines -->
     <line x1="50" y1="80" x2="150" y2="80" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
@@ -40,13 +40,13 @@ const svgTemplate = (size) =>
     <line x1="50" y1="140" x2="130" y2="140" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
     
     <!-- Sparkles -->
-    <circle cx="160" cy="50" r="6" fill="#10b981"/>
-    <circle cx="40" cy="220" r="8" fill="#10b981" opacity="0.6"/>
+    <circle cx="160" cy="50" r="6" fill="#e11d48"/>
+    <circle cx="40" cy="220" r="8" fill="#e11d48" opacity="0.6"/>
   </g>
   
   <!-- Text -->
   <text x="256" y="430" font-family="Arial, sans-serif" font-size="40" font-weight="bold" 
-        fill="#10b981" text-anchor="middle">TruyenReader</text>
+        fill="#e11d48" text-anchor="middle">TruyenReader</text>
 </svg>
 `.trim();
 
@@ -55,33 +55,41 @@ const sizes = [16, 32, 72, 96, 128, 144, 152, 192, 384, 512];
 
 // Create public directory if it doesn't exist
 const publicDir = path.join(__dirname, "public");
-if (!fs.existsSync(publicDir)) {
-  fs.mkdirSync(publicDir, { recursive: true });
-}
+const distDir = path.join(__dirname, "dist");
 
-console.log("📦 Generating PWA icons...\n");
+// Helper to create dir
+const createDir = (dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+};
+
+createDir(publicDir);
+createDir(distDir);
+
+console.log("📦 Generating PWA icons with Red Theme...\n");
 
 sizes.forEach((size) => {
   const svgContent = svgTemplate(size);
   const filename = `icon-${size}x${size}.svg`;
-  const filepath = path.join(publicDir, filename);
 
-  fs.writeFileSync(filepath, svgContent);
+  // Write to public
+  fs.writeFileSync(path.join(publicDir, filename), svgContent);
+
+  // Write to dist if it exists (for immediate preview if serving from dist)
+  if (fs.existsSync(distDir)) {
+    fs.writeFileSync(path.join(distDir, filename), svgContent);
+  }
+
   console.log(`✅ Created ${filename}`);
 });
 
-// Also create favicon
-fs.writeFileSync(path.join(publicDir, "favicon.ico"), svgTemplate(32));
+// Also update favicon
+const faviconContent = svgTemplate(32);
+fs.writeFileSync(path.join(publicDir, "favicon.ico"), faviconContent);
+if (fs.existsSync(distDir)) {
+  fs.writeFileSync(path.join(distDir, "favicon.ico"), faviconContent);
+}
 console.log("✅ Created favicon.ico");
 
-console.log("\n🎉 All icons generated successfully!");
-console.log("\n⚠️  Note: These are SVG placeholder icons.");
-console.log("For production, convert them to PNG using:");
-console.log("  - Online tool: https://realfavicongenerator.net/");
-console.log("  - Or use the create-icons.html tool with your custom logo");
-console.log("\n📝 Next steps:");
-console.log("  1. Open create-icons.html in your browser");
-console.log("  2. Upload your custom logo (512x512 PNG recommended)");
-console.log("  3. Download all generated PNG icons");
-console.log("  4. Replace the SVG files in public/ folder");
-console.log("  5. Build and deploy your app!");
+console.log("\n🎉 All red icons generated successfully!");

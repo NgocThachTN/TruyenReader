@@ -1,31 +1,36 @@
-import React from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Header from './components/Header';
-import Home from './pages/Home';
-import ComicDetail from './pages/ComicDetail';
-import ChapterViewer from './pages/ChapterViewer';
-import Search from './pages/Search';
-import CategoryList from './pages/CategoryList';
-import CategoryDetail from './pages/CategoryDetail';
-import ComicList from './pages/ComicList';
-import PWAInstallPrompt from './components/PWAInstallPrompt';
-import { Analytics } from "@vercel/analytics/react"
-
+import React from "react";
+import {
+  HashRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
+import Header from "./components/Header";
+import Home from "./pages/Home";
+import ComicDetail from "./pages/ComicDetail";
+import ChapterViewer from "./pages/ChapterViewer";
+import Search from "./pages/Search";
+import CategoryList from "./pages/CategoryList";
+import CategoryDetail from "./pages/CategoryDetail";
+import ComicList from "./pages/ComicList";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import { Analytics } from "@vercel/analytics/react";
 
 const Layout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
   // Hide header on reading page for immersion
-  const isReading = location.pathname.startsWith('/chapter/');
+  const isReading = location.pathname.startsWith("/chapter/");
 
   return (
     <div className="min-h-screen flex flex-col">
       {!isReading && <Header />}
-      <main className="flex-grow">
-        {children}
-      </main>
+      <main className="flex-grow">{children}</main>
       {!isReading && (
-        <footer className="bg-slate-950 border-t border-slate-800 py-8 text-center text-slate-500 text-sm">
-          <p>© {new Date().getFullYear()} TruyenReader. Designed for manga lovers.</p>
+        <footer className="bg-neutral-950 border-t border-neutral-800 py-8 text-center text-neutral-500 text-sm">
+          <p>
+            © {new Date().getFullYear()} TruyenReader. Designed for manga
+            lovers.
+          </p>
         </footer>
       )}
     </div>

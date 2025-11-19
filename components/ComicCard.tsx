@@ -15,45 +15,49 @@ const ComicCard: React.FC<ComicCardProps> = ({ comic, domain }) => {
     : null;
 
   return (
-    <Link to={`/comic/${comic.slug}`} className="group flex flex-col h-full bg-slate-800/50 rounded-xl overflow-hidden border border-slate-700 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-1">
-      <div className="relative aspect-[2/3] overflow-hidden">
+    <Link to={`/comic/${comic.slug}`} className="group flex flex-col h-full bg-neutral-900 border border-neutral-800 hover:border-rose-600 transition-all duration-300 relative">
+      <div className="relative aspect-[2/3] overflow-hidden bg-neutral-800">
         <img 
           src={imageUrl} 
           alt={comic.name} 
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
+        {/* Dark overlay on bottom */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
+        
+        {/* Chapter Tag */}
         {latestChapter && (
-            <div className="absolute bottom-2 left-2 right-2">
-                <span className="inline-block bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded shadow-md">
-                    Chương {latestChapter.chapter_name}
+            <div className="absolute top-2 right-2">
+                <span className="inline-block bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
+                    Chap {latestChapter.chapter_name}
                 </span>
             </div>
         )}
       </div>
       
-      <div className="p-4 flex flex-col flex-grow">
-        <h3 className="text-base font-semibold text-white line-clamp-2 mb-2 group-hover:text-emerald-400 transition-colors">
+      <div className="p-3 flex flex-col flex-grow">
+        <h3 className="text-sm font-bold text-neutral-200 line-clamp-2 mb-2 group-hover:text-rose-500 transition-colors uppercase tracking-tight">
           {comic.name}
         </h3>
         
-        <div className="mt-auto flex flex-wrap gap-1">
-            {comic.category.slice(0, 2).map((cat) => (
-                <span key={cat.id} className="text-[10px] uppercase tracking-wider text-slate-400 bg-slate-700/50 px-1.5 py-0.5 rounded">
-                    {cat.name}
-                </span>
-            ))}
-            {comic.category.length > 2 && (
-                <span className="text-[10px] text-slate-400 bg-slate-700/50 px-1.5 py-0.5 rounded">
-                    +{comic.category.length - 2}
-                </span>
-            )}
-        </div>
-        <div className="text-xs text-slate-500 mt-2">
-            Cập nhật: {new Date(comic.updatedAt).toLocaleDateString()}
+        <div className="mt-auto">
+            <div className="flex flex-wrap gap-1 mb-2">
+                {comic.category.slice(0, 4).map((cat) => (
+                    <span key={cat.id} className="text-[9px] uppercase tracking-wider text-neutral-400 border border-neutral-700 px-1 py-0.5">
+                        {cat.name}
+                    </span>
+                ))}
+            </div>
+            <div className="text-[10px] text-neutral-600 font-mono text-right border-t border-neutral-800 pt-2">
+                {new Date(comic.updatedAt).toLocaleDateString('vi-VN')}
+            </div>
         </div>
       </div>
+      
+      {/* Hover Corner Accent */}
+      <div className="absolute top-0 left-0 w-0 h-0 border-t-2 border-l-2 border-rose-600 transition-all duration-300 group-hover:w-4 group-hover:h-4 opacity-0 group-hover:opacity-100"></div>
+      <div className="absolute bottom-0 right-0 w-0 h-0 border-b-2 border-r-2 border-rose-600 transition-all duration-300 group-hover:w-4 group-hover:h-4 opacity-0 group-hover:opacity-100"></div>
     </Link>
   );
 };
