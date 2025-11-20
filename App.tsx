@@ -105,9 +105,8 @@ const AnimatedRoutes = () => {
         <Route
           path="/chapter/:slug/:apiUrl"
           element={
-            <PageTransition>
-              <ChapterViewer />
-            </PageTransition>
+            // Remove PageTransition here to disable animation for chapter viewer
+            <ChapterViewer />
           }
         />
       </Routes>
