@@ -78,6 +78,7 @@ const Header: React.FC = () => {
     { path: "/list/truyen-moi", label: "Mới Cập Nhật" },
     { path: "/list/dang-phat-hanh", label: "Đang Phát Hành" },
     { path: "/list/hoan-thanh", label: "Hoàn Thành" },
+    { path: "/history", label: "Lịch Sử" },
   ];
 
   return (

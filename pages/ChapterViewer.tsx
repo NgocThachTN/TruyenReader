@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { fetchChapterData, fetchComicDetail } from "../services/api";
 import { ChapterData, ComicDetailItem, ChapterInfo } from "../types";
 import Spinner from "../components/Spinner";
+import { addToHistory } from "../services/history";
 
 const ChapterViewer: React.FC = () => {
   const { slug, apiUrl } = useParams<{ slug: string; apiUrl: string }>();
@@ -11,6 +12,7 @@ const ChapterViewer: React.FC = () => {
   const [comic, setComic] = useState<ComicDetailItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageDomain, setImageDomain] = useState<string>("");
 
   // Reading State
   const [readingMode, setReadingMode] = useState<"scroll" | "single">("scroll");
@@ -63,6 +65,7 @@ const ChapterViewer: React.FC = () => {
         if (slug && (!comic || comic.slug !== slug)) {
           const comicResult = await fetchComicDetail(slug);
           setComic(comicResult.data.item);
+          setImageDomain(comicResult.data.APP_DOMAIN_CDN_IMAGE);
         }
       } catch (err) {
         setError("Không thể tải ảnh chương.");
@@ -74,6 +77,20 @@ const ChapterViewer: React.FC = () => {
     loadChapter();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiUrl, slug]);
+
+  useEffect(() => {
+    if (comic && apiUrl && imageDomain) {
+      const decodedUrl = decodeURIComponent(apiUrl);
+      const allChapters = comic.chapters[0]?.server_data || [];
+      const currentChapter = allChapters.find(
+        (c) => c.chapter_api_data === decodedUrl
+      );
+
+      if (currentChapter) {
+        addToHistory(comic, currentChapter, imageDomain);
+      }
+    }
+  }, [comic, apiUrl, imageDomain]);
 
   useEffect(() => {
     if (!comic || !apiUrl) return;
