@@ -21,6 +21,96 @@ interface ReaderSettings {
   isEyeProtection: boolean;
 }
 
+// --- Sub-Components (Memoized for Performance) ---
+
+const ScrollImage = React.memo(
+  ({ src, index }: { src: string; index: number }) => (
+    <div className="w-full relative min-h-[200px] bg-neutral-900/50">
+      <img
+        src={src}
+        alt={`Page ${index + 1}`}
+        loading="lazy"
+        decoding="async"
+        className="w-full h-auto block"
+      />
+    </div>
+  )
+);
+
+const ScrollModeViewer = React.memo(({ images }: { images: string[] }) => {
+  return (
+    <div className="flex flex-col items-center">
+      {images.map((src, index) => (
+        <ScrollImage key={index} src={src} index={index} />
+      ))}
+    </div>
+  );
+});
+
+const SingleModeViewer = React.memo(
+  ({
+    image,
+    pageIndex,
+    totalImages,
+    zoom,
+    showNav,
+    onPrev,
+    onNext,
+    onToggleNav,
+  }: {
+    image: string;
+    pageIndex: number;
+    totalImages: number;
+    zoom: number;
+    showNav: boolean;
+    onPrev: () => void;
+    onNext: () => void;
+    onToggleNav: () => void;
+  }) => {
+    return (
+      <div
+        className="flex flex-col items-center justify-center w-full h-full relative select-none py-4"
+        onClick={(e) => {
+          const width = e.currentTarget.clientWidth;
+          const clickX = e.nativeEvent.offsetX;
+          const zoneWidth = width * 0.3;
+          if (clickX < zoneWidth) onPrev();
+          else if (clickX > width - zoneWidth) onNext();
+          else onToggleNav();
+        }}
+      >
+        <div
+          style={{
+            transform: `scale(${zoom})`,
+            transition: "transform 0.2s ease-out",
+            transformOrigin: "top center",
+          }}
+          className="relative flex items-center justify-center"
+        >
+          <img
+            src={image}
+            alt={`Page ${pageIndex + 1}`}
+            decoding="async"
+            className="max-w-full max-h-screen object-contain shadow-2xl"
+            draggable={false}
+          />
+        </div>
+
+        {/* Page Indicator */}
+        <div
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 bg-neutral-900/80 text-neutral-300 px-4 py-1 text-xs font-mono tracking-widest backdrop-blur-sm border border-neutral-800 transition-all duration-300 rounded-full z-50 ${
+            showNav
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4 pointer-events-none"
+          }`}
+        >
+          {pageIndex + 1} / {totalImages}
+        </div>
+      </div>
+    );
+  }
+);
+
 const ChapterViewer: React.FC = () => {
   const { slug, apiUrl } = useParams<{ slug: string; apiUrl: string }>();
   const navigate = useNavigate();
@@ -30,7 +120,7 @@ const ChapterViewer: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [imageDomain, setImageDomain] = useState<string>("");
 
-  // Reading State (Initialized from localStorage if available)
+  // Reading State
   const [readingMode, setReadingMode] = useState<"scroll" | "single">("scroll");
   const [currentPage, setCurrentPage] = useState(0);
   const [zoom, setZoom] = useState(1);
@@ -41,7 +131,7 @@ const ChapterViewer: React.FC = () => {
   // Auto Scroll State
   const [isAutoScroll, setIsAutoScroll] = useState(false);
   const [autoScrollSpeed, setAutoScrollSpeed] = useState(1); // 1-5
-  const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
+  const autoScrollFrame = useRef<number | null>(null);
 
   // Navigation State
   const [prevChapter, setPrevChapter] = useState<ChapterInfo | null>(null);
@@ -54,11 +144,12 @@ const ChapterViewer: React.FC = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [showGoTop, setShowGoTop] = useState(false);
   const lastScrollY = useRef(0);
+  const scrollTick = useRef(false);
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // --- Load Settings on Mount ---
+  // --- Load Settings ---
   useEffect(() => {
     const savedSettings = localStorage.getItem(STORAGE_KEY);
     if (savedSettings) {
@@ -75,7 +166,7 @@ const ChapterViewer: React.FC = () => {
     }
   }, []);
 
-  // --- Save Settings on Change ---
+  // --- Save Settings ---
   useEffect(() => {
     const settings: ReaderSettings = {
       readingMode,
@@ -97,68 +188,77 @@ const ChapterViewer: React.FC = () => {
 
   // --- Effects ---
 
-  // Scroll & Nav Visibility Logic
+  // Scroll & Nav Visibility Logic (Throttled with rAF)
   useEffect(() => {
     const controlNavbar = () => {
-      const currentScrollY = window.scrollY;
+      if (!scrollTick.current) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
 
-      // Calculate Progress
-      const totalHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const progress =
-        totalHeight > 0 ? (currentScrollY / totalHeight) * 100 : 0;
-      setScrollProgress(progress);
+          // Calculate Progress
+          const totalHeight =
+            document.documentElement.scrollHeight - window.innerHeight;
+          const progress =
+            totalHeight > 0 ? (currentScrollY / totalHeight) * 100 : 0;
+          setScrollProgress(progress);
 
-      // Go to Top visibility
-      setShowGoTop(currentScrollY > 500);
+          // Go to Top visibility
+          setShowGoTop(currentScrollY > 500);
 
-      if (readingMode === "single") return;
+          if (readingMode !== "single") {
+            // Don't hide nav if auto-scrolling
+            if (isAutoScroll) {
+              setShowNav(false);
+            } else {
+              if (
+                currentScrollY > lastScrollY.current &&
+                currentScrollY > 100
+              ) {
+                setShowNav(false);
+                setIsChapterListOpen(false);
+                setIsSettingsOpen(false);
+              } else {
+                setShowNav(true);
+              }
+            }
+          }
 
-      // Don't hide nav if auto-scrolling
-      if (isAutoScroll) {
-        setShowNav(false);
-        return;
+          lastScrollY.current = currentScrollY;
+          scrollTick.current = false;
+        });
+        scrollTick.current = true;
       }
-
-      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
-        setShowNav(false);
-        setIsChapterListOpen(false);
-        setIsSettingsOpen(false);
-      } else {
-        setShowNav(true);
-      }
-
-      lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener("scroll", controlNavbar);
     return () => window.removeEventListener("scroll", controlNavbar);
   }, [readingMode, isAutoScroll]);
 
-  // Auto Scroll Logic
+  // Auto Scroll Logic (Using requestAnimationFrame)
   useEffect(() => {
-    if (isAutoScroll && readingMode === "scroll") {
-      // Clear existing interval to update speed if needed
-      if (autoScrollInterval.current) clearInterval(autoScrollInterval.current);
+    const scrollStep = () => {
+      // Check if we reached bottom
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+        setIsAutoScroll(false);
+        return;
+      }
+      window.scrollBy(0, autoScrollSpeed);
+      autoScrollFrame.current = requestAnimationFrame(scrollStep);
+    };
 
-      autoScrollInterval.current = setInterval(() => {
-        // Check if we reached bottom
-        if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
-          setIsAutoScroll(false);
-          if (autoScrollInterval.current)
-            clearInterval(autoScrollInterval.current);
-          return;
-        }
-        window.scrollBy(0, autoScrollSpeed);
-      }, 16); // ~60fps
+    if (isAutoScroll && readingMode === "scroll") {
+      if (autoScrollFrame.current)
+        cancelAnimationFrame(autoScrollFrame.current);
+      autoScrollFrame.current = requestAnimationFrame(scrollStep);
     } else {
-      if (autoScrollInterval.current) {
-        clearInterval(autoScrollInterval.current);
-        autoScrollInterval.current = null;
+      if (autoScrollFrame.current) {
+        cancelAnimationFrame(autoScrollFrame.current);
+        autoScrollFrame.current = null;
       }
     }
     return () => {
-      if (autoScrollInterval.current) clearInterval(autoScrollInterval.current);
+      if (autoScrollFrame.current)
+        cancelAnimationFrame(autoScrollFrame.current);
     };
   }, [isAutoScroll, autoScrollSpeed, readingMode]);
 
@@ -169,19 +269,16 @@ const ChapterViewer: React.FC = () => {
     const loadChapter = async () => {
       setLoading(true);
       setError(null);
-      // Reset auto scroll on new chapter
       setIsAutoScroll(false);
 
       try {
         const decodedUrl = decodeURIComponent(apiUrl);
 
-        // 1. Fetch Chapter Data
         const chapterResult = await fetchChapterData(decodedUrl);
         setData(chapterResult.data);
         setCurrentPage(0);
         window.scrollTo(0, 0);
 
-        // 2. Fetch Comic Details
         if (slug && (!comic || comic.slug !== slug)) {
           const comicResult = await fetchComicDetail(slug);
           setComic(comicResult.data.item);
@@ -220,7 +317,7 @@ const ChapterViewer: React.FC = () => {
     const decodedUrl = decodeURIComponent(apiUrl);
     const allChapters = comic.chapters[0]?.server_data || [];
 
-    // Sort chapters: newest (largest number) to oldest (smallest number)
+    // Sort chapters: newest to oldest
     allChapters.sort(
       (a, b) => parseFloat(b.chapter_name) - parseFloat(a.chapter_name)
     );
@@ -245,7 +342,6 @@ const ChapterViewer: React.FC = () => {
     };
 
     if (readingMode === "single") {
-      // Preload next 3 pages
       const nextPages = [1, 2, 3];
       nextPages.forEach((offset) => {
         if (currentPage + offset < images.length) {
@@ -299,14 +395,12 @@ const ChapterViewer: React.FC = () => {
   // Keyboard Controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Common shortcuts
       if (e.key === "b") setIsSettingsOpen((prev) => !prev);
 
       if (readingMode === "single") {
         if (e.key === "ArrowRight" || e.key === " ") handlePageChange("next");
         if (e.key === "ArrowLeft") handlePageChange("prev");
       } else {
-        // Toggle auto scroll with 'a'
         if (e.key === "a") setIsAutoScroll((prev) => !prev);
       }
     };
@@ -341,7 +435,7 @@ const ChapterViewer: React.FC = () => {
   // Scroll Width Classes
   const getContainerWidth = () => {
     if (readingMode === "single")
-      return "w-full h-full flex items-center justify-center";
+      return "w-full h-screen flex items-center justify-center";
     switch (scrollWidth) {
       case "md":
         return "max-w-2xl shadow-2xl shadow-black";
@@ -372,12 +466,11 @@ const ChapterViewer: React.FC = () => {
       <div
         className="fixed inset-0 z-[100] pointer-events-none transition-all duration-300"
         style={{
-          backgroundColor: isEyeProtection ? "rgb(255, 200, 150)" : "black", // Warm amber vs Black
+          backgroundColor: isEyeProtection ? "rgb(255, 200, 150)" : "black",
           opacity: isEyeProtection ? 0.15 : (100 - brightness) / 100,
           mixBlendMode: isEyeProtection ? "multiply" : "multiply",
         }}
       />
-      {/* Additional brightness layer if both are used */}
       {isEyeProtection && (
         <div
           className="fixed inset-0 z-[100] pointer-events-none bg-black transition-opacity duration-300"
@@ -388,7 +481,7 @@ const ChapterViewer: React.FC = () => {
         />
       )}
 
-      {/* Floating Chapter Navigation Buttons (Bottom Corners) */}
+      {/* Floating Navigation Buttons */}
       <div className="fixed bottom-8 left-4 z-40 flex flex-col gap-2 hidden lg:flex">
         {prevChapter && (
           <button
@@ -438,9 +531,9 @@ const ChapterViewer: React.FC = () => {
         )}
       </div>
 
-      {/* Go To Top Button */}
+      {/* Go To Top Button (Position fixed for mobile) */}
       <div
-        className={`fixed bottom-24 right-4 z-40 transition-all duration-300 transform ${
+        className={`fixed bottom-4 lg:bottom-24 right-4 z-40 transition-all duration-300 transform ${
           showGoTop
             ? "translate-y-0 opacity-100"
             : "translate-y-10 opacity-0 pointer-events-none"
@@ -504,7 +597,7 @@ const ChapterViewer: React.FC = () => {
             </button>
           </div>
 
-          {/* Center: Chapter Selector (Preserved) */}
+          {/* Center: Chapter Selector */}
           <div className="relative">
             <button
               onClick={() => {
@@ -845,56 +938,33 @@ const ChapterViewer: React.FC = () => {
             </div>
           </div>
         ) : readingMode === "scroll" ? (
-          <div className="flex flex-col items-center">
-            {images.map((src, index) => (
-              <div key={index} className="w-full relative">
-                <img
-                  src={src}
-                  alt={`Page ${index + 1}`}
-                  loading="lazy"
-                  className="w-full h-auto block"
-                />
-              </div>
-            ))}
-          </div>
+          <ScrollModeViewer images={images} />
         ) : (
-          <div
-            className="flex flex-col items-center justify-center min-h-[calc(100vh-56px)] w-full relative overflow-hidden select-none"
-            onClick={(e) => {
-              const width = e.currentTarget.clientWidth;
-              const clickX = e.nativeEvent.offsetX;
-              const zoneWidth = width * 0.3;
-              if (clickX < zoneWidth) handlePageChange("prev");
-              else if (clickX > width - zoneWidth) handlePageChange("next");
-              else setShowNav(!showNav);
+          <SingleModeViewer
+            image={images[currentPage]}
+            pageIndex={currentPage}
+            totalImages={images.length}
+            zoom={zoom}
+            showNav={showNav}
+            onPrev={() => {
+              handlePageChange("prev");
+              setIsSettingsOpen(false);
+              setIsChapterListOpen(false);
             }}
-          >
-            <div
-              style={{
-                transform: `scale(${zoom})`,
-                transition: "transform 0.2s ease-out",
-              }}
-              className="relative flex items-center justify-center"
-            >
-              <img
-                src={images[currentPage]}
-                alt={`Page ${currentPage + 1}`}
-                className="max-w-full max-h-[90vh] object-contain shadow-2xl"
-                draggable={false}
-              />
-            </div>
-
-            {/* Page Indicator */}
-            <div
-              className={`absolute bottom-6 left-1/2 -translate-x-1/2 bg-neutral-900/80 text-neutral-300 px-4 py-1 text-xs font-mono tracking-widest backdrop-blur-sm border border-neutral-800 transition-all duration-300 ${
-                showNav
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-4 pointer-events-none"
-              }`}
-            >
-              {currentPage + 1} / {images.length}
-            </div>
-          </div>
+            onNext={() => {
+              handlePageChange("next");
+              setIsSettingsOpen(false);
+              setIsChapterListOpen(false);
+            }}
+            onToggleNav={() => {
+              if (isSettingsOpen || isChapterListOpen) {
+                setIsSettingsOpen(false);
+                setIsChapterListOpen(false);
+              } else {
+                setShowNav(!showNav);
+              }
+            }}
+          />
         )}
       </div>
 
