@@ -49,7 +49,7 @@ const ScrollModeViewer = React.memo(({ images }: { images: string[] }) => {
 
 const SingleModeViewer = React.memo(
   ({
-    image,
+    images,
     pageIndex,
     totalImages,
     zoom,
@@ -58,7 +58,7 @@ const SingleModeViewer = React.memo(
     onNext,
     onToggleNav,
   }: {
-    image: string;
+    images: string[];
     pageIndex: number;
     totalImages: number;
     zoom: number;
@@ -67,6 +67,12 @@ const SingleModeViewer = React.memo(
     onNext: () => void;
     onToggleNav: () => void;
   }) => {
+    // Render current, prev, and next images to ensure they are pre-loaded/decoded
+    // Using unique keys ensures the DOM elements persist during transitions, eliminating flicker
+    const relevantIndices = [pageIndex - 1, pageIndex, pageIndex + 1].filter(
+      (i) => i >= 0 && i < totalImages
+    );
+
     return (
       <div
         className="flex flex-col items-center justify-center w-full h-full relative select-none py-4"
@@ -85,15 +91,22 @@ const SingleModeViewer = React.memo(
             transition: "transform 0.2s ease-out",
             transformOrigin: "top center",
           }}
-          className="relative flex items-center justify-center"
+          className="relative flex items-center justify-center w-full h-full"
         >
-          <img
-            src={image}
-            alt={`Page ${pageIndex + 1}`}
-            decoding="async"
-            className="max-w-full max-h-screen object-contain shadow-2xl"
-            draggable={false}
-          />
+          {relevantIndices.map((index) => (
+            <img
+              key={index}
+              src={images[index]}
+              alt={`Page ${index + 1}`}
+              loading="eager"
+              className={`max-w-full max-h-screen object-contain shadow-2xl transition-opacity duration-75 ${
+                index === pageIndex
+                  ? "relative opacity-100 z-10"
+                  : "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 -z-10 pointer-events-none"
+              }`}
+              draggable={false}
+            />
+          ))}
         </div>
 
         {/* Page Indicator */}
@@ -941,7 +954,7 @@ const ChapterViewer: React.FC = () => {
           <ScrollModeViewer images={images} />
         ) : (
           <SingleModeViewer
-            image={images[currentPage]}
+            images={images}
             pageIndex={currentPage}
             totalImages={images.length}
             zoom={zoom}
