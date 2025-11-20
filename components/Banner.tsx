@@ -60,7 +60,7 @@ const Banner: React.FC<BannerProps> = ({ comics, domain }) => {
             </div>
 
             <h2
-              className="text-2xl md:text-6xl lg:text-7xl font-black text-white mb-2 md:mb-4 leading-tight md:leading-none uppercase tracking-tighter opacity-0 animate-fade-in-up line-clamp-2"
+              className="text-2xl md:text-5xl lg:text-6xl font-black text-white mb-2 md:mb-4 leading-tight md:leading-none uppercase tracking-tighter opacity-0 animate-fade-in-up"
               style={{ animationDelay: "0.2s" }}
             >
               {currentComic.name}
