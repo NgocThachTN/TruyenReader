@@ -5,6 +5,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import Header from "./components/Header";
 import Home from "./pages/Home";
 import ComicDetail from "./pages/ComicDetail";
@@ -16,6 +17,7 @@ import ComicList from "./pages/ComicList";
 import History from "./pages/History";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import { Analytics } from "@vercel/analytics/react";
+import { PageTransition } from "./components/PageTransition";
 
 const Layout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
@@ -38,20 +40,86 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
   );
 };
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route
+          path="/"
+          element={
+            <PageTransition>
+              <Home />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <PageTransition>
+              <Search />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <PageTransition>
+              <History />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/categories"
+          element={
+            <PageTransition>
+              <CategoryList />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/category/:slug"
+          element={
+            <PageTransition>
+              <CategoryDetail />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/list/:slug"
+          element={
+            <PageTransition>
+              <ComicList />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/comic/:slug"
+          element={
+            <PageTransition>
+              <ComicDetail />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/chapter/:slug/:apiUrl"
+          element={
+            <PageTransition>
+              <ChapterViewer />
+            </PageTransition>
+          }
+        />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 const App: React.FC = () => {
   return (
     <Router>
       <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/categories" element={<CategoryList />} />
-          <Route path="/category/:slug" element={<CategoryDetail />} />
-          <Route path="/list/:slug" element={<ComicList />} />
-          <Route path="/comic/:slug" element={<ComicDetail />} />
-          <Route path="/chapter/:slug/:apiUrl" element={<ChapterViewer />} />
-        </Routes>
+        <AnimatedRoutes />
       </Layout>
       <PWAInstallPrompt />
       <Analytics />

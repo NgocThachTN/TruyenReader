@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { fetchComicDetail, getImageUrl } from "../services/api";
 import { ComicDetailItem } from "../types";
 import Spinner from "../components/Spinner";
+import { motion } from "framer-motion";
 
 const ComicDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -57,20 +58,30 @@ const ComicDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-200 font-sans pb-12">
       {/* Hero Section / Banner with Blur Effect */}
-      <div className="relative h-[23vh] md:h-[30vh] w-full overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="relative h-[23vh] md:h-[30vh] w-full overflow-hidden"
+      >
         <div className="absolute inset-0 bg-black/60 z-10"></div>
         <div
           className="absolute inset-0 bg-cover bg-center blur-xl opacity-50 scale-110"
           style={{ backgroundImage: `url(${imageUrl})` }}
         ></div>
         <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-neutral-950 to-transparent z-20"></div>
-      </div>
+      </motion.div>
 
       {/* Main Content Container */}
       <div className="container mx-auto px-4 max-w-5xl relative z-30 -mt-32">
         <div className="flex flex-col md:flex-row gap-8 md:gap-12">
           {/* Cover Image - Floating card style */}
-          <div className="flex-shrink-0 mx-auto md:mx-0 w-48 md:w-64 lg:w-72 group perspective">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="flex-shrink-0 mx-auto md:mx-0 w-48 md:w-64 lg:w-72 group perspective"
+          >
             <div className="relative aspect-[2/3] bg-neutral-800 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:shadow-[0_25px_60px_rgba(225,29,72,0.15)] transition-all duration-500 transform md:group-hover:-translate-y-2 overflow-hidden border border-neutral-800">
               <img
                 src={imageUrl}
@@ -79,10 +90,15 @@ const ComicDetail: React.FC = () => {
               />
               <div className="absolute inset-0 ring-1 ring-inset ring-white/10"></div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Info Section */}
-          <div className="flex-1 pt-4 md:pt-12 text-center md:text-left">
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="flex-1 pt-4 md:pt-12 text-center md:text-left"
+          >
             <div className="mb-2 flex items-center justify-center md:justify-start gap-2 text-xs font-bold tracking-wider text-rose-500 uppercase">
               <span>Manga</span>
               <span className="w-1 h-1 rounded-full bg-neutral-600"></span>
@@ -131,7 +147,9 @@ const ComicDetail: React.FC = () => {
             {/* Action Buttons */}
             <div className="flex flex-wrap justify-center md:justify-start gap-4 mb-4">
               {comic.chapters[0]?.server_data.length > 0 && (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     const firstChapter =
                       comic.chapters[0].server_data[
@@ -139,30 +157,38 @@ const ComicDetail: React.FC = () => {
                       ];
                     handleReadChapter(firstChapter.chapter_api_data);
                   }}
-                  className="w-full md:w-auto px-8 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm uppercase tracking-wider shadow-lg shadow-rose-900/20 transition-all hover:-translate-y-0.5"
+                  className="w-full md:w-auto px-8 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm uppercase tracking-wider shadow-lg shadow-rose-900/20 transition-all"
                 >
                   Đọc Từ Đầu
-                </button>
+                </motion.button>
               )}
               {comic.chapters[0]?.server_data.length > 0 && (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() =>
                     handleReadChapter(
                       comic.chapters[0].server_data[0].chapter_api_data
                     )
                   }
-                  className="w-full md:w-auto px-8 py-3 bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-sm uppercase tracking-wider border border-neutral-700 transition-all hover:-translate-y-0.5"
+                  className="w-full md:w-auto px-8 py-3 bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-sm uppercase tracking-wider border border-neutral-700 transition-all"
                 >
                   Chương Mới Nhất
-                </button>
+                </motion.button>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-2">
           {/* Content - Order 2 on Desktop (Right), Order 1 on Mobile (Top) */}
-          <div className="lg:col-span-2 lg:order-2">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="lg:col-span-2 lg:order-2"
+          >
             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
               <span className="w-1 h-6 bg-rose-600"></span>
               Nội Dung
@@ -197,10 +223,16 @@ const ComicDetail: React.FC = () => {
                 </svg>
               </button>
             </div>
-          </div>
+          </motion.div>
 
           {/* Chapters - Order 1 on Desktop (Left), Order 2 on Mobile (Bottom) */}
-          <div className="lg:col-span-1 lg:order-1">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="lg:col-span-1 lg:order-1"
+          >
             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
               <span className="w-1 h-6 bg-rose-600"></span>
               Danh Sách Chương
@@ -241,7 +273,7 @@ const ComicDetail: React.FC = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
