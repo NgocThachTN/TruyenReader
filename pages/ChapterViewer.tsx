@@ -51,6 +51,10 @@ const ChapterViewer: React.FC = () => {
     if (!apiUrl) return;
 
     const loadChapter = async () => {
+      // Only set loading true if we don't have data yet (initial load)
+      // or if we want to show a spinner between chapters.
+      // For smoother transition, we might keep showing old content until new is ready,
+      // but standard behavior is to show loading.
       setLoading(true);
       setError(null);
       try {
@@ -159,7 +163,7 @@ const ChapterViewer: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [readingMode, handlePageChange]);
 
-  if (loading) return <Spinner />;
+  if (loading && !data) return <Spinner />;
 
   if (error || !data) {
     return (
@@ -334,7 +338,14 @@ const ChapterViewer: React.FC = () => {
           readingMode === "scroll" ? "max-w-3xl shadow-2xl shadow-black" : ""
         }`}
       >
-        {readingMode === "scroll" ? (
+        {loading ? (
+          <div className="flex justify-center items-center h-[80vh] w-full">
+            <div className="relative w-12 h-12">
+              <div className="absolute top-0 left-0 w-full h-full border-4 border-neutral-800 rounded-full"></div>
+              <div className="absolute top-0 left-0 w-full h-full border-4 border-t-rose-600 border-r-rose-600 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+            </div>
+          </div>
+        ) : readingMode === "scroll" ? (
           <div className="flex flex-col items-center">
             {images.map((src, index) => (
               <div key={index} className="w-full relative">

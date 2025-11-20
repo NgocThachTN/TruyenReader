@@ -43,9 +43,17 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
 const AnimatedRoutes = () => {
   const location = useLocation();
 
+  // Smart key strategy:
+  // - For normal pages: use pathname to trigger transitions
+  // - For chapter viewer: use a static key so switching chapters
+  //   doesn't trigger a full component remount (preserving the UI state)
+  const routeKey = location.pathname.startsWith("/chapter/")
+    ? "chapter-viewer"
+    : location.pathname;
+
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
+      <Routes location={location} key={routeKey}>
         <Route
           path="/"
           element={
