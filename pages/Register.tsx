@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { registerUser } from "../services/be";
+import { registerUser, loginUser } from "../services/be";
 import { RegisterData } from "../types/auth";
 import { motion } from "framer-motion";
 
@@ -43,9 +43,26 @@ const Register: React.FC = () => {
     setIsLoading(true);
     try {
       await registerUser(formData);
+
+      // Auto login after registration
+      const loginResponse = await loginUser({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      // Save user info and token to localStorage
+      localStorage.setItem(
+        "user",
+        JSON.stringify(loginResponse.user || { email: formData.email })
+      );
+      localStorage.setItem("token", loginResponse.token || "dummy-token");
+
+      // Trigger a custom event so Header can update
+      window.dispatchEvent(new Event("storage"));
+
       // Show success message or redirect
-      alert("Đăng ký thành công! Vui lòng đăng nhập.");
-      navigate("/login");
+      alert("Đăng ký thành công!");
+      navigate("/");
     } catch (err: any) {
       setError(err.message || "Đã xảy ra lỗi khi đăng ký.");
     } finally {

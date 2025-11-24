@@ -28,7 +28,7 @@ const Header: React.FC = () => {
   useEffect(() => {
     checkUser();
     window.addEventListener("storage", checkUser);
-    
+
     // Also listen for custom storage events from same window
     const handleStorageChange = () => checkUser();
     window.addEventListener("storage", handleStorageChange);
@@ -117,7 +117,6 @@ const Header: React.FC = () => {
     { path: "/list/truyen-moi", label: "Mới Cập Nhật" },
     { path: "/list/dang-phat-hanh", label: "Đang Phát Hành" },
     { path: "/list/hoan-thanh", label: "Hoàn Thành" },
-    { path: "/history", label: "Lịch Sử" },
   ];
 
   // Add auth links only if not logged in
@@ -344,14 +343,20 @@ const Header: React.FC = () => {
                 <div className="w-8 h-8 rounded-full bg-rose-600 flex items-center justify-center text-white font-bold">
                   {user.fullname ? user.fullname.charAt(0).toUpperCase() : "U"}
                 </div>
-                <span className="text-sm font-medium hidden xl:block">{user.fullname}</span>
+                <span className="text-sm font-medium hidden xl:block">
+                  {user.fullname}
+                </span>
               </button>
 
               {showUserMenu && (
                 <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl py-1 z-50">
                   <div className="px-4 py-2 border-b border-neutral-800">
-                    <p className="text-sm text-white font-medium truncate">{user.fullname}</p>
-                    <p className="text-xs text-neutral-500 truncate">{user.email}</p>
+                    <p className="text-sm text-white font-medium truncate">
+                      {user.fullname}
+                    </p>
+                    <p className="text-xs text-neutral-500 truncate">
+                      {user.email}
+                    </p>
                   </div>
                   <Link
                     to="/favorites"
@@ -359,6 +364,13 @@ const Header: React.FC = () => {
                     className="block w-full text-left px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white transition-colors"
                   >
                     Truyện yêu thích
+                  </Link>
+                  <Link
+                    to="/history"
+                    onClick={() => setShowUserMenu(false)}
+                    className="block w-full text-left px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white transition-colors"
+                  >
+                    Lịch sử đọc
                   </Link>
                   <button
                     onClick={handleLogout}
@@ -425,11 +437,13 @@ const Header: React.FC = () => {
                 <li className="pt-4 border-t border-neutral-800 mt-4">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-full bg-rose-600 flex items-center justify-center text-white font-bold text-lg">
-                       {user.fullname ? user.fullname.charAt(0).toUpperCase() : "U"}
+                      {user.fullname
+                        ? user.fullname.charAt(0).toUpperCase()
+                        : "U"}
                     </div>
                     <div>
-                       <p className="text-white font-bold">{user.fullname}</p>
-                       <p className="text-sm text-neutral-500">{user.email}</p>
+                      <p className="text-white font-bold">{user.fullname}</p>
+                      <p className="text-sm text-neutral-500">{user.email}</p>
                     </div>
                   </div>
                   <Link
@@ -438,6 +452,13 @@ const Header: React.FC = () => {
                     onClick={closeMenu}
                   >
                     Truyện yêu thích
+                  </Link>
+                  <Link
+                    to="/history"
+                    className="block w-full text-left py-3 text-xl font-bold text-neutral-400 hover:text-white transition-colors border-b border-neutral-800 mb-2"
+                    onClick={closeMenu}
+                  >
+                    Lịch sử đọc
                   </Link>
                   <button
                     onClick={() => {
