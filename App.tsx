@@ -18,6 +18,7 @@ import ComicList from "./pages/ComicList";
 import History from "./pages/History";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import Favorites from "./pages/Favorites";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import { Analytics } from "@vercel/analytics/react";
@@ -173,6 +174,14 @@ const AnimatedRoutes = () => {
           element={
             <PageTransition>
               <Login />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PageTransition>
+              <ForgotPassword />
             </PageTransition>
           }
         />

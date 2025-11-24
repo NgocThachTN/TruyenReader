@@ -14,3 +14,17 @@ export interface ChangePasswordData {
   oldPassword: string;
   newPassword: string;
 }
+
+export interface ForgotPasswordData {
+  email: string;
+}
+
+export interface VerifyOtpData {
+  email: string;
+  otp: string;
+}
+
+export interface ResetPasswordData {
+  email: string;
+  newPassword: string;
+}

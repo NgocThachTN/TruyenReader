@@ -2,6 +2,9 @@ import {
   RegisterData,
   LoginData,
   ChangePasswordData,
+  ForgotPasswordData,
+  VerifyOtpData,
+  ResetPasswordData,
 } from "../types/auth";
 import { FavoriteData, FavoritesResponse } from "../types/favorite";
 import { CommentData, CommentsResponse } from "../types/comment";
@@ -204,6 +207,72 @@ export const changePassword = async (data: ChangePasswordData) => {
     return await response.json();
   } catch (error) {
     console.error("Change password error:", error);
+    throw error;
+  }
+};
+
+export const forgotPassword = async (data: ForgotPasswordData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Gửi email thất bại");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    throw error;
+  }
+};
+
+export const verifyOtp = async (data: VerifyOtpData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Xác nhận OTP thất bại");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Verify OTP error:", error);
+    throw error;
+  }
+};
+
+export const resetPassword = async (data: ResetPasswordData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Đặt lại mật khẩu thất bại");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Reset password error:", error);
     throw error;
   }
 };

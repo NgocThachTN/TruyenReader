@@ -217,7 +217,15 @@ const Login: React.FC = () => {
                 Google
               </a>
 
-              <div className="text-center mt-6">
+              <div className="text-center mt-6 space-y-2">
+                <p className="text-neutral-500 text-sm">
+                  <Link
+                    to="/forgot-password"
+                    className="font-bold text-white hover:text-rose-500 transition-colors underline decoration-neutral-700 hover:decoration-rose-500 underline-offset-4"
+                  >
+                    Quên mật khẩu?
+                  </Link>
+                </p>
                 <p className="text-neutral-500 text-sm">
                   Chưa có tài khoản?{" "}
                   <Link
