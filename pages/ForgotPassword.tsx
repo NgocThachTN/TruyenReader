@@ -1,10 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  forgotPassword,
-  verifyOtp,
-  resetPassword,
-} from "../services/be";
+import { forgotPassword, verifyOtp, resetPassword } from "../services/be";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Step = "email" | "otp" | "password";
@@ -14,11 +10,21 @@ const ForgotPassword: React.FC = () => {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [otpValues, setOtpValues] = useState<string[]>([
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ]);
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
 
   const handleSendEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +41,9 @@ const ForgotPassword: React.FC = () => {
       await forgotPassword({ email });
       setSuccess("Đã gửi mã OTP đến email của bạn. Vui lòng kiểm tra hộp thư.");
       setTimeout(() => {
+        setOtp("");
+        setOtpValues(["", "", "", "", "", ""]);
+        setOtpVerified(false);
         setStep("otp");
         setSuccess(null);
       }, 2000);
@@ -45,26 +54,94 @@ const ForgotPassword: React.FC = () => {
     }
   };
 
+  // Focus first OTP input when step changes to OTP
+  useEffect(() => {
+    if (step === "otp" && otpInputRefs.current[0]) {
+      otpInputRefs.current[0]?.focus();
+    }
+  }, [step]);
+
+  const handleOtpChange = (index: number, value: string) => {
+    // Only allow numbers
+    const numericValue = value.replace(/\D/g, "");
+    if (numericValue.length > 1) return;
+
+    const newOtpValues = [...otpValues];
+    newOtpValues[index] = numericValue;
+    setOtpValues(newOtpValues);
+
+    // Update OTP string
+    const otpString = newOtpValues.join("");
+    setOtp(otpString);
+
+    // Clear error when typing
+    if (error) setError(null);
+
+    // Auto-focus next input
+    if (numericValue && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Backspace" && !otpValues[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
+
+    if (pastedData.length === 0) return;
+
+    const newOtpValues = [...otpValues];
+    for (let i = 0; i < 6; i++) {
+      newOtpValues[i] = pastedData[i] || "";
+    }
+    setOtpValues(newOtpValues);
+    setOtp(pastedData);
+
+    // Focus the next empty input or the last one
+    const nextIndex = Math.min(pastedData.length, 5);
+    otpInputRefs.current[nextIndex]?.focus();
+  };
+
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
 
-    if (!otp) {
-      setError("Vui lòng nhập mã OTP.");
+    const otpString = otpValues.join("");
+    if (otpString.length !== 6) {
+      setError("Vui lòng nhập đầy đủ 6 số OTP.");
       return;
     }
 
     setIsLoading(true);
     try {
-      await verifyOtp({ email, otp });
-      setSuccess("Xác nhận OTP thành công!");
+      await verifyOtp({ email, otp: otpString });
+      // Chuyển các ô OTP sang màu xanh trước
+      setOtpVerified(true);
+      // Đợi animation hoàn thành (khoảng 600ms cho 6 ô với delay) rồi mới hiện thông báo
+      setTimeout(() => {
+        setSuccess("Xác nhận OTP thành công!");
+      }, 600);
+      // Sau đó chuyển sang bước tiếp theo
       setTimeout(() => {
         setStep("password");
         setSuccess(null);
-      }, 1500);
+        setOtpVerified(false);
+      }, 2000);
     } catch (err: any) {
       setError(err.message || "Mã OTP không hợp lệ. Vui lòng thử lại.");
+      setOtpVerified(false);
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +165,9 @@ const ForgotPassword: React.FC = () => {
     setIsLoading(true);
     try {
       await resetPassword({ email, newPassword });
-      setSuccess("Đặt lại mật khẩu thành công! Đang chuyển đến trang đăng nhập...");
+      setSuccess(
+        "Đặt lại mật khẩu thành công! Đang chuyển đến trang đăng nhập..."
+      );
       setTimeout(() => {
         navigate("/login");
       }, 2000);
@@ -125,8 +204,7 @@ const ForgotPassword: React.FC = () => {
             </span>
           </div>
           <h2 className="text-3xl font-bold text-white mb-6 leading-tight">
-            Khôi phục tài khoản{" "}
-            <span className="text-rose-500">của bạn</span>
+            Khôi phục tài khoản <span className="text-rose-500">của bạn</span>
           </h2>
           <p className="text-neutral-400 text-lg leading-relaxed">
             Nhập email để nhận mã OTP, sau đó đặt lại mật khẩu mới cho tài khoản
@@ -148,10 +226,8 @@ const ForgotPassword: React.FC = () => {
               Quên Mật Khẩu
             </h2>
             <p className="mt-3 text-neutral-400 text-sm">
-              {step === "email" &&
-                "Nhập email của bạn để nhận mã OTP."}
-              {step === "otp" &&
-                "Nhập mã OTP đã được gửi đến email của bạn."}
+              {step === "email" && "Nhập email của bạn để nhận mã OTP."}
+              {step === "otp" && "Nhập mã OTP đã được gửi đến email của bạn."}
               {step === "password" &&
                 "Nhập mật khẩu mới cho tài khoản của bạn."}
             </p>
@@ -285,29 +361,59 @@ const ForgotPassword: React.FC = () => {
               >
                 <div className="space-y-6">
                   <div className="group">
-                    <label
-                      htmlFor="otp"
-                      className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 group-focus-within:text-rose-500 transition-colors"
-                    >
+                    <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4 text-center">
                       Mã OTP
                     </label>
-                    <input
-                      id="otp"
-                      name="otp"
-                      type="text"
-                      required
-                      maxLength={6}
-                      className="block w-full px-0 py-3 border-b-2 border-neutral-800 bg-transparent text-white placeholder-neutral-700 focus:border-rose-600 focus:outline-none transition-colors text-lg text-center tracking-widest text-2xl"
-                      placeholder="000000"
-                      value={otp}
-                      onChange={(e) => {
-                        setOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
-                        if (error) setError(null);
-                      }}
-                      autoFocus
-                    />
-                    <p className="mt-2 text-xs text-neutral-500 text-center">
-                      Mã OTP đã được gửi đến: <span className="text-rose-400">{email}</span>
+
+                    {/* 6 OTP Input Boxes */}
+                    <div className="flex justify-center gap-2 sm:gap-3 mb-4">
+                      {otpValues.map((value, index) => (
+                        <motion.input
+                          key={index}
+                          ref={(el) => {
+                            otpInputRefs.current[index] = el;
+                          }}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={1}
+                          value={value}
+                          onChange={(e) =>
+                            handleOtpChange(index, e.target.value)
+                          }
+                          onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                          onPaste={handleOtpPaste}
+                          disabled={otpVerified}
+                          initial={false}
+                          animate={{
+                            borderColor: otpVerified
+                              ? "rgb(16, 185, 129)"
+                              : undefined,
+                            backgroundColor: otpVerified
+                              ? "rgb(6, 78, 59)"
+                              : undefined,
+                            scale: otpVerified ? [1, 1.1, 1] : 1,
+                          }}
+                          transition={{
+                            duration: 0.3,
+                            delay: index * 0.05,
+                            scale: {
+                              duration: 0.4,
+                              times: [0, 0.5, 1],
+                            },
+                          }}
+                          className={`w-12 h-12 sm:w-14 sm:h-14 text-center text-xl sm:text-2xl font-bold text-white rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                            otpVerified
+                              ? "border-2 border-emerald-500 bg-emerald-950 focus:ring-emerald-500/20 cursor-not-allowed"
+                              : "bg-neutral-900 border-2 border-neutral-800 focus:border-rose-600 focus:ring-rose-600/20 hover:border-neutral-700"
+                          }`}
+                          autoComplete="off"
+                        />
+                      ))}
+                    </div>
+
+                    <p className="mt-4 text-xs text-neutral-500 text-center">
+                      Mã OTP đã được gửi đến:{" "}
+                      <span className="text-rose-400">{email}</span>
                     </p>
                   </div>
                 </div>
@@ -367,6 +473,8 @@ const ForgotPassword: React.FC = () => {
                     onClick={() => {
                       setStep("email");
                       setOtp("");
+                      setOtpValues(["", "", "", "", "", ""]);
+                      setOtpVerified(false);
                       setError(null);
                     }}
                     className="w-full text-center py-2 text-sm text-neutral-400 hover:text-white transition-colors"
@@ -522,4 +630,3 @@ const ForgotPassword: React.FC = () => {
 };
 
 export default ForgotPassword;
-
