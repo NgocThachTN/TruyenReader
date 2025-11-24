@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import Header from "./components/Header";
@@ -21,9 +22,77 @@ import Favorites from "./pages/Favorites";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import { Analytics } from "@vercel/analytics/react";
 import { PageTransition } from "./components/PageTransition";
+import { useEffect } from "react";
 
 const Layout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Check for auth token in URL (Google Login Redirect)
+  useEffect(() => {
+    // Handle query params both before and after hash
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(location.search);
+    
+    const token = searchParams.get("token") || hashParams.get("token");
+    const userStr = searchParams.get("user") || hashParams.get("user");
+    const error = searchParams.get("error") || hashParams.get("error");
+
+    if (token) {
+      localStorage.setItem("token", token);
+
+      if (userStr) {
+        try {
+          const user = JSON.parse(decodeURIComponent(userStr));
+          localStorage.setItem("user", JSON.stringify(user));
+        } catch (e) {
+          console.error("Failed to parse user from URL", e);
+        }
+      } else {
+        // Try to decode JWT to get user info if not provided explicitly
+        try {
+          const base64Url = token.split(".")[1];
+          if (base64Url) {
+            const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+            const jsonPayload = decodeURIComponent(
+              window
+                .atob(base64)
+                .split("")
+                .map(function (c) {
+                  return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+                })
+                .join("")
+            );
+            const decoded = JSON.parse(jsonPayload);
+            // Ensure we have a fullname (use email or split email if missing)
+            if (decoded) {
+              const userData = {
+                ...decoded,
+                fullname:
+                  decoded.fullname ||
+                  decoded.name ||
+                  decoded.email?.split("@")[0] ||
+                  "User",
+              };
+              localStorage.setItem("user", JSON.stringify(userData));
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to decode token", e);
+        }
+      }
+
+      // Update app state
+      window.dispatchEvent(new Event("storage"));
+      
+      // Clean URL
+      navigate(location.pathname, { replace: true });
+    } else if (error) {
+      alert("Đăng nhập thất bại: " + error);
+      navigate("/login", { replace: true });
+    }
+  }, [navigate, location]);
+
   // Hide header on reading page for immersion
   const isReading = location.pathname.startsWith("/chapter/");
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser } from "../services/be";
+import { loginUser, API_BASE_URL } from "../services/be";
 import { LoginData } from "../types/auth";
 import { motion } from "framer-motion";
 
@@ -183,6 +183,39 @@ const Login: React.FC = () => {
                 ) : null}
                 {isLoading ? "Đang xử lý..." : "Đăng Nhập Ngay"}
               </button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-neutral-800"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-neutral-950 text-neutral-500 uppercase font-bold text-xs tracking-wider">
+                    Hoặc đăng nhập bằng
+                  </span>
+                </div>
+              </div>
+
+              <a
+                href={`${API_BASE_URL}/auth/google`}
+                className="w-full flex justify-center items-center py-4 px-4 border border-neutral-800 text-sm font-bold text-white bg-neutral-900 hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-700 transition-all uppercase tracking-wider"
+              >
+                <svg
+                  className="w-5 h-5 mr-3"
+                  aria-hidden="true"
+                  focusable="false"
+                  data-prefix="fab"
+                  data-icon="google"
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 488 512"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
+                  ></path>
+                </svg>
+                Google
+              </a>
 
               <div className="text-center mt-6">
                 <p className="text-neutral-500 text-sm">

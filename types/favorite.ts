@@ -15,3 +15,4 @@ export interface FavoriteItem extends FavoriteData {
 export interface FavoritesResponse {
   favorites: FavoriteItem[];
 }
+
