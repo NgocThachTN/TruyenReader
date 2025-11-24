@@ -1,4 +1,8 @@
-import { RegisterData, LoginData } from "../types/auth";
+import {
+  RegisterData,
+  LoginData,
+  ChangePasswordData,
+} from "../types/auth";
 import { FavoriteData, FavoritesResponse } from "../types/favorite";
 import { CommentData, CommentsResponse } from "../types/comment";
 
@@ -172,6 +176,34 @@ export const addComment = async (data: CommentData) => {
     return await response.json();
   } catch (error) {
     console.error("Add comment error:", error);
+    throw error;
+  }
+};
+
+export const changePassword = async (data: ChangePasswordData) => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Bạn cần đăng nhập để đổi mật khẩu");
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Đổi mật khẩu thất bại");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Change password error:", error);
     throw error;
   }
 };

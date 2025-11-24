@@ -9,3 +9,8 @@ export interface LoginData {
   email: string;
   password: string;
 }
+
+export interface ChangePasswordData {
+  oldPassword: string;
+  newPassword: string;
+}

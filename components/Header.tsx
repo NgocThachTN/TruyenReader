@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { searchComics, getImageUrl } from "../services/api";
 import { SearchData } from "../types/types";
+import ChangePasswordModal from "./ChangePasswordModal";
 
 const Header: React.FC = () => {
   const [keyword, setKeyword] = useState("");
@@ -12,6 +13,7 @@ const Header: React.FC = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -106,6 +108,11 @@ const Header: React.FC = () => {
     setUser(null);
     setShowUserMenu(false);
     navigate("/login");
+  };
+
+  const openChangePassword = () => {
+    setShowUserMenu(false);
+    setIsChangePasswordOpen(true);
   };
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -373,6 +380,12 @@ const Header: React.FC = () => {
                     Lịch sử đọc
                   </Link>
                   <button
+                    onClick={openChangePassword}
+                    className="w-full text-left px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white transition-colors"
+                  >
+                    Đổi mật khẩu
+                  </button>
+                  <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-sm text-rose-500 hover:bg-neutral-800 transition-colors"
                   >
@@ -462,6 +475,15 @@ const Header: React.FC = () => {
                   </Link>
                   <button
                     onClick={() => {
+                      openChangePassword();
+                      closeMenu();
+                    }}
+                    className="block w-full text-left py-3 text-xl font-bold text-neutral-400 hover:text-white transition-colors border-b border-neutral-800 mb-2"
+                  >
+                    Đổi mật khẩu
+                  </button>
+                  <button
+                    onClick={() => {
                       handleLogout();
                       closeMenu();
                     }}
@@ -475,6 +497,11 @@ const Header: React.FC = () => {
           </nav>
         </div>
       )}
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+      />
     </header>
   );
 };
