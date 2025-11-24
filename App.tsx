@@ -31,81 +31,72 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
 
   // Check for auth token in URL (Google Login Redirect)
   useEffect(() => {
-    // Handle query params both before and after hash
-    const searchParams = new URLSearchParams(window.location.search);
-    const hashParams = new URLSearchParams(location.search);
-    
-    const token = searchParams.get("token") || hashParams.get("token");
-    const userStr = searchParams.get("user") || hashParams.get("user");
-    const error = searchParams.get("error") || hashParams.get("error");
+    const url = new URL(window.location.href);
+    const token = url.searchParams.get("token");
+    const userStr = url.searchParams.get("user");
+    const error = url.searchParams.get("error");
 
-    if (token && !isProcessingToken) {
-      setIsProcessingToken(true);
-      localStorage.setItem("token", token);
-
-      if (userStr) {
-        try {
-          const user = JSON.parse(decodeURIComponent(userStr));
-          localStorage.setItem("user", JSON.stringify(user));
-        } catch (e) {
-          console.error("Failed to parse user from URL", e);
-        }
-      } else {
-        // Try to decode JWT to get user info if not provided explicitly
-        try {
-          const base64Url = token.split(".")[1];
-          if (base64Url) {
-            const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-            const jsonPayload = decodeURIComponent(
-              window
-                .atob(base64)
-                .split("")
-                .map(function (c) {
-                  return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-                })
-                .join("")
-            );
-            const decoded = JSON.parse(jsonPayload);
-            // Ensure we have a fullname (use email or split email if missing)
-            if (decoded) {
-              const userData = {
-                ...decoded,
-                fullname:
-                  decoded.fullname ||
-                  decoded.name ||
-                  decoded.email?.split("@")[0] ||
-                  "User",
-              };
-              localStorage.setItem("user", JSON.stringify(userData));
-            }
-          }
-        } catch (e) {
-          console.warn("Failed to decode token", e);
-        }
-      }
-
-      // Update app state
-      window.dispatchEvent(new Event("storage"));
-      
-      // Force reload to home page to ensure clean state
-      // Increase timeout to ensure localStorage is persisted before reload
-      setTimeout(() => {
-        window.location.href = window.location.protocol + "//" + window.location.host + "/#/";
-        window.location.reload();
-      }, 300);
-      
-    } else if (error) {
+    if (error) {
       alert("Đăng nhập thất bại: " + error);
       navigate("/login", { replace: true });
+      return;
     }
 
-    // Safety timeout: if for some reason reload doesn't happen, stop loading
-    const timer = setTimeout(() => {
-      if (isProcessingToken) setIsProcessingToken(false);
-    }, 5000);
+    if (!token || isProcessingToken) {
+      return;
+    }
 
-    return () => clearTimeout(timer);
-  }, [navigate, location, isProcessingToken]);
+    setIsProcessingToken(true);
+    localStorage.setItem("token", token);
+
+    if (userStr) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userStr));
+        localStorage.setItem("user", JSON.stringify(user));
+      } catch (e) {
+        console.error("Failed to parse user from URL", e);
+      }
+    } else {
+      try {
+        const base64Url = token.split(".")[1];
+        if (base64Url) {
+          const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+          const jsonPayload = decodeURIComponent(
+            window
+              .atob(base64)
+              .split("")
+              .map(function (c) {
+                return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+              })
+              .join("")
+          );
+          const decoded = JSON.parse(jsonPayload);
+          if (decoded) {
+            const userData = {
+              ...decoded,
+              fullname:
+                decoded.fullname ||
+                decoded.name ||
+                decoded.email?.split("@")[0] ||
+                "User",
+            };
+            localStorage.setItem("user", JSON.stringify(userData));
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to decode token", e);
+      }
+    }
+
+    window.dispatchEvent(new Event("storage"));
+
+    const cleanUrl =
+      window.location.protocol + "//" + window.location.host + "/#/";
+    window.history.replaceState({}, document.title, cleanUrl);
+
+    navigate("/", { replace: true });
+    setIsProcessingToken(false);
+  }, [navigate, isProcessingToken]);
 
   // Hide header on reading page for immersion
   const isReading = location.pathname.startsWith("/chapter/");
