@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import {
   fetchHomeData,
   fetchComicList,
@@ -25,6 +25,26 @@ const Home: React.FC = () => {
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  useLayoutEffect(() => {
+    const supportsManual =
+      typeof window !== "undefined" && "scrollRestoration" in window.history;
+
+    let previousMode: ScrollRestoration | null = null;
+
+    if (supportsManual) {
+      previousMode = window.history.scrollRestoration;
+      window.history.scrollRestoration = "manual";
+    }
+
+    window.scrollTo(0, 0);
+
+    return () => {
+      if (supportsManual && previousMode) {
+        window.history.scrollRestoration = previousMode;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {

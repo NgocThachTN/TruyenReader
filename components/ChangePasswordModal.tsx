@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { changePassword } from "../services/be";
 
@@ -20,11 +20,19 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
+  const scrollStateRef = useRef<{
+    scrollY: number;
+    overflow: string;
+    position: string;
+    width: string;
+    top: string;
+  } | null>(null);
   const [ripple, setRipple] = useState<{
     x: number;
     y: number;
     key: number;
   } | null>(null);
+  const firstInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -47,9 +55,35 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     return () => setIsMounted(false);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isOpen) {
       setIsVisible(true);
+      const bodyStyle = document.body.style;
+      scrollStateRef.current = {
+        scrollY: window.scrollY,
+        overflow: bodyStyle.overflow,
+        position: bodyStyle.position,
+        width: bodyStyle.width,
+        top: bodyStyle.top,
+      };
+      bodyStyle.overflow = "hidden";
+      bodyStyle.position = "fixed";
+      bodyStyle.width = "100%";
+      bodyStyle.top = `-${scrollStateRef.current.scrollY}px`;
+
+      return () => {
+        if (scrollStateRef.current) {
+          const prev = scrollStateRef.current;
+          bodyStyle.overflow = prev.overflow;
+          bodyStyle.position = prev.position;
+          bodyStyle.width = prev.width;
+          bodyStyle.top = prev.top;
+          window.scrollTo(0, prev.scrollY);
+          scrollStateRef.current = null;
+        }
+      };
+    } else {
+      setIsVisible(false);
     }
   }, [isOpen]);
 
@@ -60,6 +94,15 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (isOpen && firstInputRef.current) {
+      const frame = requestAnimationFrame(() => {
+        firstInputRef.current?.focus();
+      });
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [isOpen]);
 
   if (!isOpen || !isMounted) return null;
 
@@ -149,7 +192,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               Vui lòng xác thực mật khẩu hiện tại để tiếp tục
             </p>
           </div>
-            <button
+          <button
             onClick={handleClose}
             className="text-neutral-500 hover:text-white transition-colors text-lg"
             aria-label="Đóng popup đổi mật khẩu"
@@ -169,7 +212,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               onChange={(e) => setOldPassword(e.target.value)}
               className="w-full border border-neutral-800 bg-neutral-900 px-4 py-3 text-white focus:border-rose-500 focus:outline-none transition-colors placeholder:text-neutral-600"
               placeholder="••••••••"
-              autoFocus
+              ref={firstInputRef}
             />
           </div>
 
@@ -272,4 +315,3 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 };
 
 export default ChangePasswordModal;
-
