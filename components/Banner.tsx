@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ComicItem } from "../types";
+import { ComicItem } from "../types/types";
 import { getImageUrl } from "../services/api";
 
 interface BannerProps {

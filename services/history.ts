@@ -1,4 +1,4 @@
-import { ChapterInfo, ComicDetailItem } from "../types";
+import { ChapterInfo, ComicDetailItem } from "../types/types";
 import { getImageUrl } from "./api";
 
 export interface HistoryItem {
@@ -9,6 +9,7 @@ export interface HistoryItem {
   chapterName: string;
   chapterApiData: string;
   lastReadAt: number;
+  lastPage?: number;
 }
 
 const HISTORY_KEY = "truyen_history";
@@ -27,7 +28,8 @@ export const getHistory = (): HistoryItem[] => {
 export const addToHistory = (
   comic: ComicDetailItem,
   chapter: ChapterInfo,
-  domain: string
+  domain: string,
+  page: number = 0
 ) => {
   try {
     const history = getHistory();
@@ -40,6 +42,7 @@ export const addToHistory = (
       chapterName: chapter.chapter_name,
       chapterApiData: chapter.chapter_api_data,
       lastReadAt: Date.now(),
+      lastPage: page,
     };
 
     const filteredHistory = history.filter((item) => item.comicSlug !== comic.slug);

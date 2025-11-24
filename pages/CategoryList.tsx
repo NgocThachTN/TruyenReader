@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchCategories } from "../services/api";
-import { Category } from "../types";
+import { Category } from "../types/types";
 import Spinner from "../components/Spinner";
 import { motion } from "framer-motion";
 import { containerVariants, itemVariants } from "../components/PageTransition";

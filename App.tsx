@@ -15,6 +15,9 @@ import CategoryList from "./pages/CategoryList";
 import CategoryDetail from "./pages/CategoryDetail";
 import ComicList from "./pages/ComicList";
 import History from "./pages/History";
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+import Favorites from "./pages/Favorites";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import { Analytics } from "@vercel/analytics/react";
 import { PageTransition } from "./components/PageTransition";
@@ -75,6 +78,30 @@ const AnimatedRoutes = () => {
           element={
             <PageTransition>
               <History />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PageTransition>
+              <Register />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PageTransition>
+              <Login />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <PageTransition>
+              <Favorites />
             </PageTransition>
           }
         />

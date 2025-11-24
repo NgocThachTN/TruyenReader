@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { fetchComicList } from "../services/api";
-import { CategoryDetailData } from "../types";
+import { CategoryDetailData } from "../types/types";
 import ComicCard from "../components/ComicCard";
 import Spinner from "../components/Spinner";
 import { motion } from "framer-motion";

@@ -1,12 +1,19 @@
-import { HomeResponse, DetailResponse, ChapterResponse, SearchResponse, CategoryListResponse, CategoryDetailResponse } from '../types';
+import {
+  HomeResponse,
+  DetailResponse,
+  ChapterResponse,
+  SearchResponse,
+  CategoryListResponse,
+  CategoryDetailResponse,
+} from "../types/types";
 
-const BASE_URL = 'https://otruyenapi.com/v1/api';
+const BASE_URL = "https://otruyenapi.com/v1/api";
 
 export const fetchHomeData = async (): Promise<HomeResponse> => {
   try {
     const response = await fetch(`${BASE_URL}/home`);
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error("Network response was not ok");
     }
     return await response.json();
   } catch (error) {
@@ -15,11 +22,13 @@ export const fetchHomeData = async (): Promise<HomeResponse> => {
   }
 };
 
-export const fetchComicDetail = async (slug: string): Promise<DetailResponse> => {
+export const fetchComicDetail = async (
+  slug: string
+): Promise<DetailResponse> => {
   try {
     const response = await fetch(`${BASE_URL}/truyen-tranh/${slug}`);
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error("Network response was not ok");
     }
     return await response.json();
   } catch (error) {
@@ -28,11 +37,15 @@ export const fetchComicDetail = async (slug: string): Promise<DetailResponse> =>
   }
 };
 
-export const searchComics = async (keyword: string): Promise<SearchResponse> => {
+export const searchComics = async (
+  keyword: string
+): Promise<SearchResponse> => {
   try {
-    const response = await fetch(`${BASE_URL}/tim-kiem?keyword=${encodeURIComponent(keyword)}`);
+    const response = await fetch(
+      `${BASE_URL}/tim-kiem?keyword=${encodeURIComponent(keyword)}`
+    );
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error("Network response was not ok");
     }
     return await response.json();
   } catch (error) {
@@ -45,7 +58,7 @@ export const fetchCategories = async (): Promise<CategoryListResponse> => {
   try {
     const response = await fetch(`${BASE_URL}/the-loai`);
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error("Network response was not ok");
     }
     return await response.json();
   } catch (error) {
@@ -54,11 +67,14 @@ export const fetchCategories = async (): Promise<CategoryListResponse> => {
   }
 };
 
-export const fetchComicsByCategory = async (slug: string, page: number = 1): Promise<CategoryDetailResponse> => {
+export const fetchComicsByCategory = async (
+  slug: string,
+  page: number = 1
+): Promise<CategoryDetailResponse> => {
   try {
     const response = await fetch(`${BASE_URL}/the-loai/${slug}?page=${page}`);
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error("Network response was not ok");
     }
     return await response.json();
   } catch (error) {
@@ -67,7 +83,11 @@ export const fetchComicsByCategory = async (slug: string, page: number = 1): Pro
   }
 };
 
-export const fetchComicList = async (slug: string, page: number = 1, category?: string): Promise<CategoryDetailResponse> => {
+export const fetchComicList = async (
+  slug: string,
+  page: number = 1,
+  category?: string
+): Promise<CategoryDetailResponse> => {
   try {
     let url = `${BASE_URL}/danh-sach/${slug}?page=${page}`;
     if (category) {
@@ -75,7 +95,7 @@ export const fetchComicList = async (slug: string, page: number = 1, category?: 
     }
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error("Network response was not ok");
     }
     return await response.json();
   } catch (error) {
@@ -84,19 +104,21 @@ export const fetchComicList = async (slug: string, page: number = 1, category?: 
   }
 };
 
-export const fetchChapterData = async (apiUrl: string): Promise<ChapterResponse> => {
-    try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-            throw new Error('Failed to load chapter');
-        }
-        return await response.json();
-    } catch (error) {
-        console.error("Error fetching chapter:", error);
-        throw error;
+export const fetchChapterData = async (
+  apiUrl: string
+): Promise<ChapterResponse> => {
+  try {
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error("Failed to load chapter");
     }
-}
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching chapter:", error);
+    throw error;
+  }
+};
 
 export const getImageUrl = (domain: string, path: string): string => {
-    return `${domain}/uploads/comics/${path}`;
-}
+  return `${domain}/uploads/comics/${path}`;
+};

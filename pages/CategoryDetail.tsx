@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { fetchComicsByCategory, fetchComicList } from "../services/api";
-import { CategoryDetailData } from "../types";
+import { CategoryDetailData } from "../types/types";
 import ComicCard from "../components/ComicCard";
 import Spinner from "../components/Spinner";
 import { motion } from "framer-motion";
@@ -71,11 +71,13 @@ const CategoryDetail: React.FC = () => {
 
   if (sortOrder === "latest") {
     displayedItems.sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
   } else if (sortOrder === "oldest") {
     displayedItems.sort(
-      (a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+      (a, b) =>
+        new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
     );
   } else if (sortOrder === "name_asc") {
     displayedItems.sort((a, b) => a.name.localeCompare(b.name));
@@ -138,10 +140,7 @@ const CategoryDetail: React.FC = () => {
         >
           {displayedItems.map((item) => (
             <motion.div key={item._id} variants={itemVariants}>
-              <ComicCard
-                comic={item}
-                domain={data.APP_DOMAIN_CDN_IMAGE}
-              />
+              <ComicCard comic={item} domain={data.APP_DOMAIN_CDN_IMAGE} />
             </motion.div>
           ))}
         </motion.div>

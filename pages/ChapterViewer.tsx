@@ -7,9 +7,9 @@ import React, {
 } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { fetchChapterData, fetchComicDetail } from "../services/api";
-import { ChapterData, ComicDetailItem, ChapterInfo } from "../types";
+import { ChapterData, ComicDetailItem, ChapterInfo } from "../types/types";
 import Spinner from "../components/Spinner";
-import { addToHistory } from "../services/history";
+import { addToHistory, getHistory } from "../services/history";
 
 const STORAGE_KEY = "otruyen_reader_settings";
 
@@ -19,6 +19,7 @@ interface ReaderSettings {
   brightness: number;
   scrollWidth: "md" | "lg" | "full";
   isEyeProtection: boolean;
+  eyeProtectionLevel: number;
 }
 
 // --- Sub-Components (Memoized for Performance) ---
@@ -139,6 +140,7 @@ const ChapterViewer: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [brightness, setBrightness] = useState(100);
   const [isEyeProtection, setIsEyeProtection] = useState(false);
+  const [eyeProtectionLevel, setEyeProtectionLevel] = useState(30);
   const [scrollWidth, setScrollWidth] = useState<"md" | "lg" | "full">("lg");
 
   // Auto Scroll State
@@ -173,6 +175,7 @@ const ChapterViewer: React.FC = () => {
         setBrightness(parsed.brightness || 100);
         setScrollWidth(parsed.scrollWidth || "lg");
         setIsEyeProtection(parsed.isEyeProtection || false);
+        setEyeProtectionLevel(parsed.eyeProtectionLevel || 30);
       } catch (e) {
         console.error("Failed to parse settings", e);
       }
@@ -187,9 +190,17 @@ const ChapterViewer: React.FC = () => {
       brightness,
       scrollWidth,
       isEyeProtection,
+      eyeProtectionLevel,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  }, [readingMode, zoom, brightness, scrollWidth, isEyeProtection]);
+  }, [
+    readingMode,
+    zoom,
+    brightness,
+    scrollWidth,
+    isEyeProtection,
+    eyeProtectionLevel,
+  ]);
 
   // --- Derived Data ---
   const images = useMemo(() => {
@@ -289,7 +300,18 @@ const ChapterViewer: React.FC = () => {
 
         const chapterResult = await fetchChapterData(decodedUrl);
         setData(chapterResult.data);
-        setCurrentPage(0);
+
+        // Restore reading progress if available
+        const history = getHistory();
+        const savedProgress = history.find(
+          (h) => h.chapterApiData === decodedUrl
+        );
+        if (savedProgress && savedProgress.lastPage) {
+          setCurrentPage(savedProgress.lastPage);
+        } else {
+          setCurrentPage(0);
+        }
+
         window.scrollTo(0, 0);
 
         if (slug && (!comic || comic.slug !== slug)) {
@@ -318,10 +340,15 @@ const ChapterViewer: React.FC = () => {
       );
 
       if (currentChapter) {
-        addToHistory(comic, currentChapter, imageDomain);
+        addToHistory(
+          comic,
+          currentChapter,
+          imageDomain,
+          readingMode === "single" ? currentPage : 0
+        );
       }
     }
-  }, [comic, apiUrl, imageDomain]);
+  }, [comic, apiUrl, imageDomain, currentPage, readingMode]);
 
   // Prev/Next Chapter Logic
   useEffect(() => {
@@ -480,7 +507,9 @@ const ChapterViewer: React.FC = () => {
         className="fixed inset-0 z-[100] pointer-events-none transition-all duration-300"
         style={{
           backgroundColor: isEyeProtection ? "rgb(255, 200, 150)" : "black",
-          opacity: isEyeProtection ? 0.15 : (100 - brightness) / 100,
+          opacity: isEyeProtection
+            ? eyeProtectionLevel / 100
+            : (100 - brightness) / 100,
           mixBlendMode: isEyeProtection ? "multiply" : "multiply",
         }}
       />
@@ -778,6 +807,28 @@ const ChapterViewer: React.FC = () => {
                   />
                 </button>
               </div>
+
+              {isEyeProtection && (
+                <div className="mb-6 pl-2 border-l-2 border-neutral-800">
+                  <div className="flex justify-between mb-2 text-sm">
+                    <span className="text-neutral-400 text-xs">Mức độ</span>
+                    <span className="text-rose-500 text-xs">
+                      {eyeProtectionLevel}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="10"
+                    max="60"
+                    step="5"
+                    value={eyeProtectionLevel}
+                    onChange={(e) =>
+                      setEyeProtectionLevel(Number(e.target.value))
+                    }
+                    className="w-full h-1 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-rose-600"
+                  />
+                </div>
+              )}
 
               {/* Auto Scroll Toggle */}
               {readingMode === "scroll" && (

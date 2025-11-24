@@ -4,7 +4,7 @@ import {
   fetchComicList,
   fetchComicsByCategory,
 } from "../services/api";
-import { HomeData, CategoryDetailData } from "../types";
+import { HomeData, CategoryDetailData } from "../types/types";
 import ComicCard from "../components/ComicCard";
 import Spinner from "../components/Spinner";
 import Banner from "../components/Banner";
@@ -14,13 +14,15 @@ import { containerVariants, itemVariants } from "../components/PageTransition";
 
 const Home: React.FC = () => {
   const [bannerData, setBannerData] = useState<HomeData | null>(null);
-  const [ongoingComics, setOngoingComics] =
-    useState<CategoryDetailData | null>(null);
+  const [ongoingComics, setOngoingComics] = useState<CategoryDetailData | null>(
+    null
+  );
   const [newComics, setNewComics] = useState<CategoryDetailData | null>(null);
   const [completedComics, setCompletedComics] =
     useState<CategoryDetailData | null>(null);
-  const [mangaComics, setMangaComics] =
-    useState<CategoryDetailData | null>(null);
+  const [mangaComics, setMangaComics] = useState<CategoryDetailData | null>(
+    null
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 

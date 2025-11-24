@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { searchComics, getImageUrl } from "../services/api";
-import { SearchData } from "../types";
+import { SearchData } from "../types/types";
 
 const Header: React.FC = () => {
   const [keyword, setKeyword] = useState("");
@@ -10,8 +10,34 @@ const Header: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const checkUser = () => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    } else {
+      setUser(null);
+    }
+  };
+
+  useEffect(() => {
+    checkUser();
+    window.addEventListener("storage", checkUser);
+    
+    // Also listen for custom storage events from same window
+    const handleStorageChange = () => checkUser();
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", checkUser);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -20,7 +46,12 @@ const Header: React.FC = () => {
         !searchRef.current.contains(event.target as Node)
       ) {
         setShowDropdown(false);
-        // Optional: Close mobile search if clicked outside (though it's full screen usually)
+      }
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowUserMenu(false);
       }
     };
 
@@ -69,6 +100,14 @@ const Header: React.FC = () => {
     setIsMobileSearchOpen(false);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null);
+    setShowUserMenu(false);
+    navigate("/login");
+  };
+
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -80,6 +119,12 @@ const Header: React.FC = () => {
     { path: "/list/hoan-thanh", label: "Hoàn Thành" },
     { path: "/history", label: "Lịch Sử" },
   ];
+
+  // Add auth links only if not logged in
+  if (!user) {
+    navLinks.push({ path: "/register", label: "Đăng Ký" });
+    navLinks.push({ path: "/login", label: "Đăng Nhập" });
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-neutral-950/80 border-b border-neutral-800">
@@ -288,6 +333,45 @@ const Header: React.FC = () => {
             )}
         </div>
 
+        {/* User Avatar / Auth Buttons */}
+        <div className="hidden lg:flex items-center gap-4">
+          {user ? (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 text-neutral-200 hover:text-white transition-colors"
+              >
+                <div className="w-8 h-8 rounded-full bg-rose-600 flex items-center justify-center text-white font-bold">
+                  {user.fullname ? user.fullname.charAt(0).toUpperCase() : "U"}
+                </div>
+                <span className="text-sm font-medium hidden xl:block">{user.fullname}</span>
+              </button>
+
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl py-1 z-50">
+                  <div className="px-4 py-2 border-b border-neutral-800">
+                    <p className="text-sm text-white font-medium truncate">{user.fullname}</p>
+                    <p className="text-xs text-neutral-500 truncate">{user.email}</p>
+                  </div>
+                  <Link
+                    to="/favorites"
+                    onClick={() => setShowUserMenu(false)}
+                    className="block w-full text-left px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white transition-colors"
+                  >
+                    Truyện yêu thích
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm text-rose-500 hover:bg-neutral-800 transition-colors"
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : null}
+        </div>
+
         {/* Mobile Menu Button */}
         {!isMobileSearchOpen && (
           <button
@@ -337,6 +421,35 @@ const Header: React.FC = () => {
                   </Link>
                 </li>
               ))}
+              {user && (
+                <li className="pt-4 border-t border-neutral-800 mt-4">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-rose-600 flex items-center justify-center text-white font-bold text-lg">
+                       {user.fullname ? user.fullname.charAt(0).toUpperCase() : "U"}
+                    </div>
+                    <div>
+                       <p className="text-white font-bold">{user.fullname}</p>
+                       <p className="text-sm text-neutral-500">{user.email}</p>
+                    </div>
+                  </div>
+                  <Link
+                    to="/favorites"
+                    className="block w-full text-left py-3 text-xl font-bold text-neutral-400 hover:text-white transition-colors border-b border-neutral-800 mb-2"
+                    onClick={closeMenu}
+                  >
+                    Truyện yêu thích
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      closeMenu();
+                    }}
+                    className="block w-full text-left py-3 text-xl font-bold text-rose-500 hover:text-rose-400 transition-colors"
+                  >
+                    Đăng xuất
+                  </button>
+                </li>
+              )}
             </ul>
           </nav>
         </div>

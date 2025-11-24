@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { searchComics } from "../services/api";
-import { SearchData } from "../types";
+import { SearchData } from "../types/types";
 import ComicCard from "../components/ComicCard";
 import Spinner from "../components/Spinner";
 import { motion } from "framer-motion";
@@ -72,10 +72,7 @@ const Search: React.FC = () => {
           >
             {data.items.map((item) => (
               <motion.div key={item._id} variants={itemVariants}>
-                <ComicCard
-                  comic={item}
-                  domain={data.APP_DOMAIN_CDN_IMAGE}
-                />
+                <ComicCard comic={item} domain={data.APP_DOMAIN_CDN_IMAGE} />
               </motion.div>
             ))}
           </motion.div>
