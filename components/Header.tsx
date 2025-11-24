@@ -118,6 +118,19 @@ const Header: React.FC = () => {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
+  // Helper function to get display name with fallback
+  const getDisplayName = (user: any): string => {
+    if (!user) return "User";
+    return (
+      user.fullname ||
+      user.name ||
+      user.displayName ||
+      user.given_name ||
+      (user.email && user.email.split("@")[0]) ||
+      "User"
+    );
+  };
+
   const navLinks = [
     { path: "/", label: "Trang Chủ" },
     { path: "/categories", label: "Thể Loại" },
@@ -348,10 +361,10 @@ const Header: React.FC = () => {
                 className="flex items-center gap-2 text-neutral-200 hover:text-white transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-rose-600 flex items-center justify-center text-white font-bold">
-                  {user.fullname ? user.fullname.charAt(0).toUpperCase() : "U"}
+                  {getDisplayName(user).charAt(0).toUpperCase()}
                 </div>
                 <span className="text-sm font-medium hidden xl:block">
-                  {user.fullname}
+                  {getDisplayName(user)}
                 </span>
               </button>
 
@@ -359,7 +372,7 @@ const Header: React.FC = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl py-1 z-50">
                   <div className="px-4 py-2 border-b border-neutral-800">
                     <p className="text-sm text-white font-medium truncate">
-                      {user.fullname}
+                      {getDisplayName(user)}
                     </p>
                     <p className="text-xs text-neutral-500 truncate">
                       {user.email}
@@ -450,12 +463,10 @@ const Header: React.FC = () => {
                 <li className="pt-4 border-t border-neutral-800 mt-4">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-full bg-rose-600 flex items-center justify-center text-white font-bold text-lg">
-                      {user.fullname
-                        ? user.fullname.charAt(0).toUpperCase()
-                        : "U"}
+                      {getDisplayName(user).charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-white font-bold">{user.fullname}</p>
+                      <p className="text-white font-bold">{getDisplayName(user)}</p>
                       <p className="text-sm text-neutral-500">{user.email}</p>
                     </div>
                   </div>

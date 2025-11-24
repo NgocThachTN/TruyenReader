@@ -53,7 +53,18 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
     if (userStr) {
       try {
         const user = JSON.parse(decodeURIComponent(userStr));
-        localStorage.setItem("user", JSON.stringify(user));
+        // Đảm bảo fullname được set đúng cách
+        const userData = {
+          ...user,
+          fullname:
+            user.fullname ||
+            user.name ||
+            user.displayName ||
+            user.given_name ||
+            (user.email && user.email.split("@")[0]) ||
+            "User",
+        };
+        localStorage.setItem("user", JSON.stringify(userData));
       } catch (e) {
         console.error("Failed to parse user from URL", e);
       }
@@ -78,7 +89,9 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
               fullname:
                 decoded.fullname ||
                 decoded.name ||
-                decoded.email?.split("@")[0] ||
+                decoded.displayName ||
+                decoded.given_name ||
+                (decoded.email && decoded.email.split("@")[0]) ||
                 "User",
             };
             localStorage.setItem("user", JSON.stringify(userData));
