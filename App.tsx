@@ -87,19 +87,24 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
       // Update app state
       window.dispatchEvent(new Event("storage"));
       
-      // Clean URL completely (both query params and hash params if any)
-      // Use a small timeout to allow state updates to propagate
+      // Force reload to home page to ensure clean state
+      // Increase timeout to ensure localStorage is persisted before reload
       setTimeout(() => {
-        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "#/";
-        window.history.replaceState({}, document.title, newUrl);
-        navigate("/", { replace: true });
-        setIsProcessingToken(false);
-      }, 100);
+        window.location.href = window.location.protocol + "//" + window.location.host + "/#/";
+        window.location.reload();
+      }, 300);
       
     } else if (error) {
       alert("Đăng nhập thất bại: " + error);
       navigate("/login", { replace: true });
     }
+
+    // Safety timeout: if for some reason reload doesn't happen, stop loading
+    const timer = setTimeout(() => {
+      if (isProcessingToken) setIsProcessingToken(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
   }, [navigate, location, isProcessingToken]);
 
   // Hide header on reading page for immersion
