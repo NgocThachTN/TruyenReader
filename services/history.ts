@@ -1,19 +1,9 @@
 import { ChapterInfo, ComicDetailItem } from "../types/types";
+import { HistoryItem } from "../types/history";
 import { getImageUrl } from "./api";
 
 const API_BASE_URL = "https://nodejs-test-api-o7bd.onrender.com/api";
 const HISTORY_KEY = "truyen_history";
-
-export interface HistoryItem {
-  comicId: string;
-  comicName: string;
-  comicSlug: string;
-  comicThumb: string;
-  chapterName: string;
-  chapterApiData: string;
-  lastReadAt: number;
-  lastPage?: number;
-}
 
 // Helper to get local history (fallback)
 const getLocalHistory = (): HistoryItem[] => {

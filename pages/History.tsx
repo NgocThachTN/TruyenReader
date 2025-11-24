@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   getHistory,
-  HistoryItem,
   removeFromHistory,
   clearHistory,
 } from "../services/history";
+import { HistoryItem } from "../types/history";
 import { motion, AnimatePresence } from "framer-motion";
 import { containerVariants, itemVariants } from "../components/PageTransition";
 import Spinner from "../components/Spinner";

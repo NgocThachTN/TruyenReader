@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getFavorites, removeFromFavorites } from "../services/be";
 import { getImageUrl } from "../services/api";
-import { FavoriteItem } from "../types/auth";
+import { FavoriteItem } from "../types/favorite";
 import Spinner from "../components/Spinner";
 import { motion } from "framer-motion";
 

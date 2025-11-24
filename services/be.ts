@@ -1,11 +1,6 @@
-import {
-  RegisterData,
-  LoginData,
-  FavoriteData,
-  FavoritesResponse,
-  CommentData,
-  CommentsResponse,
-} from "../types/auth";
+import { RegisterData, LoginData } from "../types/auth";
+import { FavoriteData, FavoritesResponse } from "../types/favorite";
+import { CommentData, CommentsResponse } from "../types/comment";
 
 const API_BASE_URL = "https://nodejs-test-api-o7bd.onrender.com/api";
 

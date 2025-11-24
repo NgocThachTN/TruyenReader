@@ -9,7 +9,7 @@ import {
   addComment,
 } from "../services/be";
 import { ComicDetailItem } from "../types/types";
-import { CommentItem } from "../types/auth";
+import { CommentItem } from "../types/comment";
 import Spinner from "../components/Spinner";
 import { motion } from "framer-motion";
 
