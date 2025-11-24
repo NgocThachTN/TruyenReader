@@ -85,8 +85,14 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
       // Update app state
       window.dispatchEvent(new Event("storage"));
       
-      // Clean URL
-      navigate(location.pathname, { replace: true });
+      // Clean URL completely (both query params and hash params if any)
+      // Using window.history.replaceState to ensure the browser URL is cleaned
+      // even outside the HashRouter context
+      const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "#/";
+      window.history.replaceState({}, document.title, newUrl);
+      
+      // Also navigate internally to home to be safe
+      navigate("/", { replace: true });
     } else if (error) {
       alert("Đăng nhập thất bại: " + error);
       navigate("/login", { replace: true });
