@@ -22,11 +22,12 @@ import Favorites from "./pages/Favorites";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import { Analytics } from "@vercel/analytics/react";
 import { PageTransition } from "./components/PageTransition";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Layout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isProcessingToken, setIsProcessingToken] = useState(false);
 
   // Check for auth token in URL (Google Login Redirect)
   useEffect(() => {
@@ -38,7 +39,8 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
     const userStr = searchParams.get("user") || hashParams.get("user");
     const error = searchParams.get("error") || hashParams.get("error");
 
-    if (token) {
+    if (token && !isProcessingToken) {
+      setIsProcessingToken(true);
       localStorage.setItem("token", token);
 
       if (userStr) {
@@ -86,21 +88,27 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
       window.dispatchEvent(new Event("storage"));
       
       // Clean URL completely (both query params and hash params if any)
-      // Using window.history.replaceState to ensure the browser URL is cleaned
-      // even outside the HashRouter context
-      const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "#/";
-      window.history.replaceState({}, document.title, newUrl);
+      // Use a small timeout to allow state updates to propagate
+      setTimeout(() => {
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "#/";
+        window.history.replaceState({}, document.title, newUrl);
+        navigate("/", { replace: true });
+        setIsProcessingToken(false);
+      }, 100);
       
-      // Also navigate internally to home to be safe
-      navigate("/", { replace: true });
     } else if (error) {
       alert("Đăng nhập thất bại: " + error);
       navigate("/login", { replace: true });
     }
-  }, [navigate, location]);
+  }, [navigate, location, isProcessingToken]);
 
   // Hide header on reading page for immersion
   const isReading = location.pathname.startsWith("/chapter/");
+  
+  // Show loading if processing token to avoid UI flicker or hang
+  if (isProcessingToken) {
+    return <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-white">Đang xử lý đăng nhập...</div>;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
