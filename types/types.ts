@@ -100,23 +100,23 @@ export interface SearchResponse {
 
 // Chapter API Response (Inferred from standard OTruyen structure)
 export interface ChapterImage {
-    image_page: number;
-    image_file: string;
+  image_page: number;
+  image_file: string;
 }
 
 export interface ChapterDetailItem {
-    chapter_path: string;
-    chapter_image: ChapterImage[];
+  chapter_path: string;
+  chapter_image: ChapterImage[];
 }
 
 export interface ChapterData {
-    domain_cdn: string;
-    item: ChapterDetailItem;
+  domain_cdn: string;
+  item: ChapterDetailItem;
 }
 
 export interface ChapterResponse {
-    status: string;
-    data: ChapterData;
+  status: string;
+  data: ChapterData;
 }
 
 export interface CategoryListData {

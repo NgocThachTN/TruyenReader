@@ -204,10 +204,17 @@ const ChapterViewer: React.FC = () => {
 
   // --- Derived Data ---
   const images = useMemo(() => {
-    if (!data) return [];
-    return data.item.chapter_image.map((img) => {
-      return `${data.domain_cdn}/${data.item.chapter_path}/${img.image_file}`;
-    });
+    if (!data || !data.item || !data.item.chapter_image) return [];
+
+    try {
+      return data.item.chapter_image.map((img: any) => {
+        const fileName = typeof img === "string" ? img : img.image_file;
+        return `${data.domain_cdn}/${data.item.chapter_path}/${fileName}`;
+      });
+    } catch (err) {
+      console.error("Error parsing chapter images:", err);
+      return [];
+    }
   }, [data]);
 
   // --- Effects ---
@@ -299,10 +306,15 @@ const ChapterViewer: React.FC = () => {
         const decodedUrl = decodeURIComponent(apiUrl);
 
         const chapterResult = await fetchChapterData(decodedUrl);
+
+        if (!chapterResult || !chapterResult.data || !chapterResult.data.item) {
+          throw new Error("Invalid chapter data format");
+        }
+
         setData(chapterResult.data);
 
         // Restore reading progress if available
-        const history = getHistory();
+        const history = await getHistory(); // getHistory is async now
         const savedProgress = history.find(
           (h) => h.chapterApiData === decodedUrl
         );
@@ -319,8 +331,9 @@ const ChapterViewer: React.FC = () => {
           setComic(comicResult.data.item);
           setImageDomain(comicResult.data.APP_DOMAIN_CDN_IMAGE);
         }
-      } catch (err) {
-        setError("Không thể tải ảnh chương.");
+      } catch (err: any) {
+        console.error("Chapter load error:", err);
+        setError(err.message || "Không thể tải ảnh chương.");
       } finally {
         setLoading(false);
       }
@@ -358,17 +371,18 @@ const ChapterViewer: React.FC = () => {
     const allChapters = comic.chapters[0]?.server_data || [];
 
     // Sort chapters: newest to oldest
-    allChapters.sort(
+    // Note: Create a shallow copy before sorting to avoid mutating state/props directly if they are frozen
+    const sortedChapters = [...allChapters].sort(
       (a, b) => parseFloat(b.chapter_name) - parseFloat(a.chapter_name)
     );
 
-    const currentIndex = allChapters.findIndex(
+    const currentIndex = sortedChapters.findIndex(
       (c) => c.chapter_api_data === decodedUrl
     );
 
     if (currentIndex !== -1) {
-      setNextChapter(allChapters[currentIndex - 1] || null);
-      setPrevChapter(allChapters[currentIndex + 1] || null);
+      setNextChapter(sortedChapters[currentIndex - 1] || null);
+      setPrevChapter(sortedChapters[currentIndex + 1] || null);
     }
   }, [comic, apiUrl]);
 

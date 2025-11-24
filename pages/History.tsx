@@ -8,25 +8,56 @@ import {
 } from "../services/history";
 import { motion, AnimatePresence } from "framer-motion";
 import { containerVariants, itemVariants } from "../components/PageTransition";
+import Spinner from "../components/Spinner";
 
 const History: React.FC = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setHistory(getHistory());
+    loadHistory();
   }, []);
 
-  const handleRemove = (slug: string) => {
-    const newHistory = removeFromHistory(slug);
-    setHistory(newHistory);
-  };
-
-  const handleClearAll = () => {
-    if (window.confirm("Bạn có chắc muốn xóa toàn bộ lịch sử?")) {
-      clearHistory();
-      setHistory([]);
+  const loadHistory = async () => {
+    setLoading(true);
+    try {
+      const data = await getHistory();
+      setHistory(data);
+    } catch (error) {
+      console.error("Failed to load history:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleRemove = async (slug: string) => {
+    if (window.confirm("Bạn có chắc muốn xóa truyện này khỏi lịch sử?")) {
+      try {
+        const newHistory = await removeFromHistory(slug);
+        setHistory(newHistory);
+      } catch (error) {
+        console.error("Failed to remove item:", error);
+      }
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (window.confirm("Bạn có chắc muốn xóa toàn bộ lịch sử?")) {
+      setLoading(true);
+      try {
+        await clearHistory();
+        setHistory([]);
+      } catch (error) {
+        console.error("Failed to clear history:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  if (loading) {
+    return <Spinner />;
+  }
 
   if (history.length === 0) {
     return (
@@ -134,14 +165,20 @@ const History: React.FC = () => {
                   </div>
 
                   <div className="mt-auto flex items-center gap-3">
-                    <Link
-                      to={`/chapter/${item.comicSlug}/${encodeURIComponent(
-                        item.chapterApiData
-                      )}`}
-                      className="flex-1 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2 px-3 rounded text-center transition-colors truncate"
-                    >
-                      Đọc tiếp Chapter {item.chapterName}
-                    </Link>
+                    {item.chapterApiData ? (
+                      <Link
+                        to={`/chapter/${item.comicSlug}/${encodeURIComponent(
+                          item.chapterApiData
+                        )}`}
+                        className="flex-1 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2 px-3 rounded text-center transition-colors truncate"
+                      >
+                        Đọc tiếp Chapter {item.chapterName}
+                      </Link>
+                    ) : (
+                      <span className="flex-1 bg-neutral-800 text-neutral-500 text-xs font-bold py-2 px-3 rounded text-center cursor-not-allowed">
+                        Chapter {item.chapterName}
+                      </span>
+                    )}
                     <button
                       onClick={() => handleRemove(item.comicSlug)}
                       className="p-2 text-neutral-500 hover:text-red-500 transition-colors bg-neutral-800 hover:bg-neutral-800/80 rounded"
