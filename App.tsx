@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  HashRouter as Router,
+  BrowserRouter as Router,
   Routes,
   Route,
   useLocation,
@@ -104,8 +104,7 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
 
     window.dispatchEvent(new Event("storage"));
 
-    const cleanUrl =
-      window.location.protocol + "//" + window.location.host + "/#/";
+    const cleanUrl = window.location.protocol + "//" + window.location.host;
     window.history.replaceState({}, document.title, cleanUrl);
 
     navigate("/", { replace: true });
@@ -114,10 +113,14 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
 
   // Hide header on reading page for immersion
   const isReading = location.pathname.startsWith("/chapter/");
-  
+
   // Show loading if processing token to avoid UI flicker or hang
   if (isProcessingToken) {
-    return <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-white">Đang xử lý đăng nhập...</div>;
+    return (
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-white">
+        Đang xử lý đăng nhập...
+      </div>
+    );
   }
 
   return (
@@ -149,103 +152,105 @@ const AnimatedRoutes = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={routeKey}>
-        <Route
-          path="/"
-          element={
-            <PageTransition>
-              <Home />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/search"
-          element={
-            <PageTransition>
-              <Search />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/history"
-          element={
-            <PageTransition>
-              <History />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <PageTransition>
-              <Register />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <PageTransition>
-              <Login />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/forgot-password"
-          element={
-            <PageTransition>
-              <ForgotPassword />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/favorites"
-          element={
-            <PageTransition>
-              <Favorites />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/categories"
-          element={
-            <PageTransition>
-              <CategoryList />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/category/:slug"
-          element={
-            <PageTransition>
-              <CategoryDetail />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/list/:slug"
-          element={
-            <PageTransition>
-              <ComicList />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/comic/:slug"
-          element={
-            <PageTransition>
-              <ComicDetail />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/chapter/:slug/:apiUrl"
-          element={
-            // Remove PageTransition here to disable animation for chapter viewer
-            <ChapterViewer />
-          }
-        />
-      </Routes>
+      <div key={routeKey}>
+        <Routes location={location}>
+          <Route
+            path="/"
+            element={
+              <PageTransition>
+                <Home />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/search"
+            element={
+              <PageTransition>
+                <Search />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <PageTransition>
+                <History />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PageTransition>
+                <Register />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PageTransition>
+                <Login />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <PageTransition>
+                <ForgotPassword />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <PageTransition>
+                <Favorites />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/categories"
+            element={
+              <PageTransition>
+                <CategoryList />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/category/:slug"
+            element={
+              <PageTransition>
+                <CategoryDetail />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/list/:slug"
+            element={
+              <PageTransition>
+                <ComicList />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/comic/:slug"
+            element={
+              <PageTransition>
+                <ComicDetail />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/chapter/:slug/:apiUrl"
+            element={
+              // Remove PageTransition here to disable animation for chapter viewer
+              <ChapterViewer />
+            }
+          />
+        </Routes>
+      </div>
     </AnimatePresence>
   );
 };
