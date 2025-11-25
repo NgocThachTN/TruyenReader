@@ -445,8 +445,8 @@ const Header: React.FC = () => {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="lg:hidden bg-neutral-950 border-t border-neutral-800 absolute w-full left-0 h-screen z-40">
-          <nav className="container mx-auto px-6 py-8">
+        <div className="lg:hidden bg-neutral-950 border-t border-neutral-800 absolute left-0 right-0 top-full z-40 max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <nav className="container mx-auto px-6 py-8 pb-12">
             <ul className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <li key={link.path}>
@@ -466,7 +466,9 @@ const Header: React.FC = () => {
                       {getDisplayName(user).charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-white font-bold">{getDisplayName(user)}</p>
+                      <p className="text-white font-bold">
+                        {getDisplayName(user)}
+                      </p>
                       <p className="text-sm text-neutral-500">{user.email}</p>
                     </div>
                   </div>

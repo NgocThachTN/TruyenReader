@@ -24,6 +24,7 @@ import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import { Analytics } from "@vercel/analytics/react";
 import { PageTransition } from "./components/PageTransition";
 import { useEffect, useState } from "react";
+import RequireAuth from "./routes/RequireAuth";
 
 const Layout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
@@ -173,9 +174,11 @@ const AnimatedRoutes = () => {
           <Route
             path="/history"
             element={
-              <PageTransition>
-                <History />
-              </PageTransition>
+              <RequireAuth>
+                <PageTransition>
+                  <History />
+                </PageTransition>
+              </RequireAuth>
             }
           />
           <Route
@@ -205,9 +208,11 @@ const AnimatedRoutes = () => {
           <Route
             path="/favorites"
             element={
-              <PageTransition>
-                <Favorites />
-              </PageTransition>
+              <RequireAuth>
+                <PageTransition>
+                  <Favorites />
+                </PageTransition>
+              </RequireAuth>
             }
           />
           <Route
