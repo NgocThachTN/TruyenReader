@@ -10,8 +10,10 @@ import {
 } from "../services/be";
 import { ComicDetailItem } from "../types/types";
 import { CommentItem } from "../types/comment";
+import { HistoryItem } from "../types/history";
 import Spinner from "../components/Spinner";
 import { motion } from "framer-motion";
+import { getHistory } from "../services/history";
 
 const ComicDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -27,10 +29,12 @@ const ComicDetail: React.FC = () => {
   const [loadingComments, setLoadingComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [lastReadEntry, setLastReadEntry] = useState<HistoryItem | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     if (!slug) return;
+    setLastReadEntry(null);
 
     const loadDetail = async () => {
       setLoading(true);
@@ -59,6 +63,16 @@ const ComicDetail: React.FC = () => {
           } catch (error) {
             console.error("Failed to check favorites:", error);
           }
+        }
+
+        try {
+          const historyList = await getHistory();
+          const historyItem = historyList.find(
+            (item) => item.comicSlug === result.data.item.slug
+          );
+          setLastReadEntry(historyItem || null);
+        } catch (historyError) {
+          console.error("Failed to load reading history:", historyError);
         }
 
         // Load comments
@@ -276,15 +290,26 @@ const ComicDetail: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => {
+                    if (lastReadEntry?.chapterApiData) {
+                      handleReadChapter(lastReadEntry.chapterApiData);
+                      return;
+                    }
                     const firstChapter =
                       comic.chapters[0].server_data[
                         comic.chapters[0].server_data.length - 1
                       ];
                     handleReadChapter(firstChapter.chapter_api_data);
                   }}
-                  className="w-full md:w-auto px-8 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm uppercase tracking-wider shadow-lg shadow-rose-900/20 transition-all"
+                  className="w-full md:w-auto px-8 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm uppercase tracking-wider shadow-lg shadow-rose-900/20 transition-all text-center"
                 >
-                  Đọc Từ Đầu
+                  {lastReadEntry?.chapterApiData
+                    ? "Tiếp Tục Đọc"
+                    : "Đọc Từ Đầu"}
+                  {lastReadEntry?.chapterName && (
+                    <span className="block text-[11px] font-normal normal-case tracking-normal text-neutral-100 mt-1">
+                      Chương {lastReadEntry.chapterName}
+                    </span>
+                  )}
                 </motion.button>
               )}
               {comic.chapters[0]?.server_data.length > 0 && (
