@@ -363,19 +363,19 @@ const ChapterViewer: React.FC = () => {
     }
   }, [comic, apiUrl, imageDomain, currentPage, readingMode]);
 
-  // Prev/Next Chapter Logic
-  useEffect(() => {
-    if (!comic || !apiUrl) return;
-
-    const decodedUrl = decodeURIComponent(apiUrl);
-    const allChapters = comic.chapters[0]?.server_data || [];
-
-    // Sort chapters: newest to oldest
-    // Note: Create a shallow copy before sorting to avoid mutating state/props directly if they are frozen
-    const sortedChapters = [...allChapters].sort(
+  const sortedChapters = useMemo(() => {
+    if (!comic) return [];
+    const list = comic.chapters[0]?.server_data || [];
+    return [...list].sort(
       (a, b) => parseFloat(b.chapter_name) - parseFloat(a.chapter_name)
     );
+  }, [comic]);
 
+  // Prev/Next Chapter Logic
+  useEffect(() => {
+    if (!sortedChapters.length || !apiUrl) return;
+
+    const decodedUrl = decodeURIComponent(apiUrl);
     const currentIndex = sortedChapters.findIndex(
       (c) => c.chapter_api_data === decodedUrl
     );
@@ -384,7 +384,7 @@ const ChapterViewer: React.FC = () => {
       setNextChapter(sortedChapters[currentIndex - 1] || null);
       setPrevChapter(sortedChapters[currentIndex + 1] || null);
     }
-  }, [comic, apiUrl]);
+  }, [sortedChapters, apiUrl]);
 
   // Image Preloading
   useEffect(() => {
@@ -684,9 +684,9 @@ const ChapterViewer: React.FC = () => {
               </svg>
             </button>
 
-            {isChapterListOpen && comic && (
+            {isChapterListOpen && sortedChapters.length > 0 && (
               <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 max-h-[60vh] overflow-y-auto bg-neutral-900 border border-neutral-800 shadow-2xl z-50 custom-scrollbar">
-                {comic.chapters[0]?.server_data.map((chapter, idx) => (
+                {sortedChapters.map((chapter, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleChapterChange(chapter)}
