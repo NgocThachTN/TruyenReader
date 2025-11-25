@@ -15,6 +15,7 @@ const History: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
     loadHistory();
   }, []);
 

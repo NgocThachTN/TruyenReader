@@ -22,6 +22,7 @@ const Favorites: React.FC = () => {
   const CDN_DOMAIN = "https://otruyenapi.com";
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
     fetchFavorites();
   }, [navigate]);
 
