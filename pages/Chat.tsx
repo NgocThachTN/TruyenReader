@@ -126,6 +126,11 @@ const Chat: React.FC = () => {
     [conversations, selectedUserId]
   );
 
+  const currentConversation = useMemo(
+    () => conversations.find((c) => c.user.userId === selectedUserId) || null,
+    [conversations, selectedUserId]
+  );
+
   const isSelectedUserOnline = useMemo(
     () => !!onlineUsers.find((u) => u.userId === selectedUserId),
     [onlineUsers, selectedUserId]
@@ -153,12 +158,14 @@ const Chat: React.FC = () => {
           ? {
               ...c,
               unreadCount: 0,
-              lastMessage: c.lastMessage
-                ? {
-                    ...c.lastMessage,
-                    isRead: true,
-                  }
-                : c.lastMessage,
+              // Chỉ set đã đọc cho tin nhắn mà mình là người nhận (receiver)
+              lastMessage:
+                c.lastMessage && c.lastMessage.receiverId === currentUserId
+                  ? {
+                      ...c.lastMessage,
+                      isRead: true,
+                    }
+                  : c.lastMessage,
             }
           : c
       )
@@ -205,6 +212,17 @@ const Chat: React.FC = () => {
       setError(err.message || "Không thể tải danh sách cuộc trò chuyện");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Chỉ làm mới danh sách cuộc trò chuyện (không đổi selectedUser / không loadMessages)
+  const refreshConversationsSilently = async () => {
+    try {
+      const data: ConversationsResponse = await getConversations();
+      const list = sortConversationsByLatestMessage(data.conversations || []);
+      setConversations(list);
+    } catch (err) {
+      console.warn("Failed to refresh conversations", err);
     }
   };
 
@@ -328,7 +346,7 @@ const Chat: React.FC = () => {
                       selectedUserId === otherUserId &&
                       mapped.receiverId === currentUserId
                         ? true
-                        : c.lastMessage?.isRead ?? true,
+                        : c.lastMessage?.isRead ?? false,
                     createdAt: mapped.createdAt,
                     updatedAt: mapped.createdAt,
                   },
@@ -361,6 +379,16 @@ const Chat: React.FC = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Khi đang mở một cuộc trò chuyện, tự động refresh conversations định kỳ
+  // để cập nhật trạng thái "đã đọc" mà không cần reload trang
+  useEffect(() => {
+    if (!selectedUserId) return;
+    const intervalId = window.setInterval(() => {
+      refreshConversationsSilently();
+    }, 5000);
+    return () => window.clearInterval(intervalId);
+  }, [selectedUserId]);
 
   const openConversation = async (userId: number, fullname: string) => {
     setSelectedUserId(userId);
@@ -584,11 +612,18 @@ const Chat: React.FC = () => {
                   : "Chưa có tin nhắn nào. Hãy là người nhắn trước!"}
               </p>
             ) : (
-              messages.map((msg) => {
+              messages.map((msg, index) => {
                 const isOwn = msg.senderId === currentUserId;
                 const avatarSource = selectedConversationUser?.avatar;
                 const displayName =
                   selectedConversationUser?.fullname || selectedUserName;
+                const isLastMessage = index === messages.length - 1;
+                const showReadReceipt =
+                  isOwn &&
+                  isLastMessage &&
+                  !!currentConversation?.lastMessage &&
+                  currentConversation.lastMessage.senderId === currentUserId &&
+                  currentConversation.lastMessage.isRead;
 
                 return (
                   <div
@@ -628,12 +663,19 @@ const Chat: React.FC = () => {
                       <p className="whitespace-pre-wrap break-words">
                         {msg.message}
                       </p>
-                      <p className="mt-1 text-[11px] text-neutral-300 text-right">
-                        {new Date(msg.createdAt).toLocaleTimeString("vi-VN", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
+                      <div className="mt-1 flex items-center justify-between gap-2">
+                        <p className="text-[11px] text-neutral-300 text-right flex-1">
+                          {new Date(msg.createdAt).toLocaleTimeString("vi-VN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                        {showReadReceipt && (
+                          <span className="ml-2 text-[10px] text-emerald-400 font-medium">
+                            Đã đọc
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
