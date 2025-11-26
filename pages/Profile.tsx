@@ -304,13 +304,23 @@ const Profile: React.FC = () => {
                 </p>
               </div>
             </div>
-            <div className="text-sm text-neutral-500">
-              Tham gia ngày{" "}
-              <span className="text-neutral-300 font-medium">
-                {profile?.user?.createdAt
-                  ? new Date(profile.user.createdAt).toLocaleDateString("vi-VN")
-                  : "-"}
-              </span>
+            <div className="text-sm text-neutral-500 space-y-1">
+              <div>
+                Tham gia ngày{" "}
+                <span className="text-neutral-300 font-medium">
+                  {profile?.user?.createdAt
+                    ? new Date(profile.user.createdAt).toLocaleDateString("vi-VN")
+                    : "-"}
+                </span>
+              </div>
+              <div>
+                Hoạt động gần nhất{" "}
+                <span className="text-neutral-300 font-medium">
+                  {profile?.user?.lastSeenAt
+                    ? new Date(profile.user.lastSeenAt).toLocaleString("vi-VN")
+                    : "-"}
+                </span>
+              </div>
             </div>
           </div>
         </section>

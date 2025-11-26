@@ -7,6 +7,7 @@ export interface ProfileUser {
   role: string;
   avatar?: string;
   avatarVersion?: number;
+  lastSeenAt?: string;
   createdAt: string;
   updatedAt: string;
 }
