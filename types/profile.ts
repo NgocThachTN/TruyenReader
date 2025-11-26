@@ -29,6 +29,7 @@ export interface ProfileResponse {
   user: ProfileUser;
   favorites: FavoriteItem[];
   readingHistory: ReadingHistoryItem[];
+  isOnline?: boolean;
 }
 
 export interface ProfileUpdatePayload {

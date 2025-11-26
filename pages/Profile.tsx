@@ -1,11 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Spinner from "../components/Spinner";
-import {
-  getProfile,
-  updateProfile,
-  uploadAvatar,
-} from "../services/be";
+import { getProfile, updateProfile, uploadAvatar } from "../services/be";
 import {
   ProfileResponse,
   ProfileUpdatePayload,
@@ -151,9 +147,7 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleAvatarChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -163,10 +157,7 @@ const Profile: React.FC = () => {
     try {
       await uploadAvatar(file);
       const refreshedProfile = await getProfile();
-      const updatedUser = applyProfileData(
-        refreshedProfile,
-        Date.now()
-      );
+      const updatedUser = applyProfileData(refreshedProfile, Date.now());
       syncLocalUser(updatedUser);
       setSuccess("Ảnh đại diện đã được cập nhật!");
     } catch (err: any) {
@@ -309,7 +300,9 @@ const Profile: React.FC = () => {
                 Tham gia ngày{" "}
                 <span className="text-neutral-300 font-medium">
                   {profile?.user?.createdAt
-                    ? new Date(profile.user.createdAt).toLocaleDateString("vi-VN")
+                    ? new Date(profile.user.createdAt).toLocaleDateString(
+                        "vi-VN"
+                      )
                     : "-"}
                 </span>
               </div>
@@ -521,4 +514,3 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
-

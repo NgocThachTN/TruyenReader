@@ -314,6 +314,34 @@ export const getProfile = async (): Promise<ProfileResponse> => {
   }
 };
 
+export const getUserProfileById = async (
+  userId: number
+): Promise<ProfileResponse> => {
+  const token = getAuthToken();
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/profile/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || "Không thể lấy thông tin hồ sơ người dùng"
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Get user profile by id error:", error);
+    throw error;
+  }
+};
+
 export const updateProfile = async (
   payload: ProfileUpdatePayload
 ): Promise<ProfileUserResponse> => {

@@ -26,6 +26,7 @@ import { PageTransition } from "./components/PageTransition";
 import { useEffect, useState } from "react";
 import RequireAuth from "./routes/RequireAuth";
 import Profile from "./pages/Profile";
+import UserProfile from "./pages/UserProfile";
 
 const Layout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
@@ -222,6 +223,16 @@ const AnimatedRoutes = () => {
               <RequireAuth>
                 <PageTransition>
                   <Profile />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/users/:userId"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <UserProfile />
                 </PageTransition>
               </RequireAuth>
             }

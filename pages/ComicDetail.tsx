@@ -184,6 +184,32 @@ const ComicDetail: React.FC = () => {
     }
   };
 
+  const handleOpenUserProfile = (userId?: number) => {
+    if (!userId || userId <= 0) return;
+
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        const currentUserId: number | undefined =
+          typeof parsed.userId === "number"
+            ? parsed.userId
+            : typeof parsed.id === "number"
+            ? parsed.id
+            : undefined;
+
+        if (currentUserId && currentUserId === userId) {
+          navigate("/profile");
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to parse current user from localStorage", e);
+    }
+
+    navigate(`/users/${userId}`);
+  };
+
   if (loading) return <Spinner />;
   if (error || !comic)
     return (
@@ -562,9 +588,15 @@ const ComicDetail: React.FC = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-bold text-white">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleOpenUserProfile(comment.userId)
+                              }
+                              className="font-bold text-white hover:text-rose-400 hover:underline text-left"
+                            >
                               {comment.user?.fullname || "Người dùng ẩn danh"}
-                            </h4>
+                            </button>
                             <span className="text-xs text-neutral-500">
                               {new Date(comment.createdAt).toLocaleString(
                                 "vi-VN"
