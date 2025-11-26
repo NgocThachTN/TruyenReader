@@ -8,6 +8,11 @@ import {
 } from "../types/auth";
 import { FavoriteData, FavoritesResponse } from "../types/favorite";
 import { CommentData, CommentsResponse } from "../types/comment";
+import {
+  ProfileResponse,
+  ProfileUpdatePayload,
+  ProfileUserResponse,
+} from "../types/profile";
 
 export const API_BASE_URL = "https://nodejs-test-api-o7bd.onrender.com/api";
 
@@ -273,6 +278,93 @@ export const resetPassword = async (data: ResetPasswordData) => {
     return await response.json();
   } catch (error) {
     console.error("Reset password error:", error);
+    throw error;
+  }
+};
+
+const getAuthToken = () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Bạn cần đăng nhập để thực hiện chức năng này");
+  }
+  return token;
+};
+
+export const getProfile = async (): Promise<ProfileResponse> => {
+  const token = getAuthToken();
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/profile`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Không thể lấy thông tin hồ sơ");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Get profile error:", error);
+    throw error;
+  }
+};
+
+export const updateProfile = async (
+  payload: ProfileUpdatePayload
+): Promise<ProfileUserResponse> => {
+  const token = getAuthToken();
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/profile`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Cập nhật hồ sơ thất bại");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Update profile error:", error);
+    throw error;
+  }
+};
+
+export const uploadAvatar = async (
+  file: File
+): Promise<ProfileUserResponse> => {
+  const token = getAuthToken();
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/profile`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Tải ảnh đại diện thất bại");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Upload avatar error:", error);
     throw error;
   }
 };

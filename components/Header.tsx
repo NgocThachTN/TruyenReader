@@ -14,6 +14,7 @@ const Header: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -30,6 +31,7 @@ const Header: React.FC = () => {
   useEffect(() => {
     checkUser();
     window.addEventListener("storage", checkUser);
+    window.addEventListener("user:updated", checkUser as EventListener);
 
     // Also listen for custom storage events from same window
     const handleStorageChange = () => checkUser();
@@ -38,6 +40,7 @@ const Header: React.FC = () => {
     return () => {
       window.removeEventListener("storage", checkUser);
       window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("user:updated", checkUser as EventListener);
     };
   }, []);
 
@@ -128,6 +131,42 @@ const Header: React.FC = () => {
       user.given_name ||
       (user.email && user.email.split("@")[0]) ||
       "User"
+    );
+  };
+
+  const getAvatarSrc = () => {
+    if (!user?.avatar) return "";
+    const separator = user.avatar.includes("?") ? "&" : "?";
+    const version = user.avatarVersion;
+    return version ? `${user.avatar}${separator}v=${version}` : user.avatar;
+  };
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatar, user?.avatarVersion]);
+
+  const renderAvatar = (sizeClass: string, textClass = "") => {
+    const displayName = getDisplayName(user);
+    const avatarSrc = getAvatarSrc();
+    if (avatarSrc && !avatarError) {
+      return (
+        <img
+          src={avatarSrc}
+          alt={displayName}
+          className={`${sizeClass} rounded-full object-cover border border-neutral-800`}
+          onError={() => setAvatarError(true)}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+        />
+      );
+    }
+
+    return (
+      <div
+        className={`${sizeClass} rounded-full bg-rose-600 flex items-center justify-center text-white font-bold ${textClass}`}
+      >
+        {displayName.charAt(0).toUpperCase()}
+      </div>
     );
   };
 
@@ -360,9 +399,7 @@ const Header: React.FC = () => {
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-2 text-neutral-200 hover:text-white transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-rose-600 flex items-center justify-center text-white font-bold">
-                  {getDisplayName(user).charAt(0).toUpperCase()}
-                </div>
+                {renderAvatar("w-8 h-8")}
                 <span className="text-sm font-medium hidden xl:block">
                   {getDisplayName(user)}
                 </span>
@@ -378,6 +415,13 @@ const Header: React.FC = () => {
                       {user.email}
                     </p>
                   </div>
+                  <Link
+                    to="/profile"
+                    onClick={() => setShowUserMenu(false)}
+                    className="block w-full text-left px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white transition-colors"
+                  >
+                    Trang cá nhân
+                  </Link>
                   <Link
                     to="/favorites"
                     onClick={() => setShowUserMenu(false)}
@@ -445,8 +489,8 @@ const Header: React.FC = () => {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="lg:hidden bg-neutral-950 border-t border-neutral-800 absolute left-0 right-0 top-full z-40 max-h-[calc(100vh-4rem)] overflow-y-auto">
-          <nav className="container mx-auto px-6 py-8 pb-12">
+        <div className="lg:hidden bg-neutral-950 border-t border-neutral-800 absolute w-full left-0 h-screen z-40">
+          <nav className="container mx-auto px-6 py-8">
             <ul className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <li key={link.path}>
@@ -462,16 +506,19 @@ const Header: React.FC = () => {
               {user && (
                 <li className="pt-4 border-t border-neutral-800 mt-4">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-rose-600 flex items-center justify-center text-white font-bold text-lg">
-                      {getDisplayName(user).charAt(0).toUpperCase()}
-                    </div>
+                    {renderAvatar("w-10 h-10", "text-lg")}
                     <div>
-                      <p className="text-white font-bold">
-                        {getDisplayName(user)}
-                      </p>
+                      <p className="text-white font-bold">{getDisplayName(user)}</p>
                       <p className="text-sm text-neutral-500">{user.email}</p>
                     </div>
                   </div>
+                  <Link
+                    to="/profile"
+                    className="block w-full text-left py-3 text-xl font-bold text-neutral-400 hover:text-white transition-colors border-b border-neutral-800 mb-2"
+                    onClick={closeMenu}
+                  >
+                    Trang cá nhân
+                  </Link>
                   <Link
                     to="/favorites"
                     className="block w-full text-left py-3 text-xl font-bold text-neutral-400 hover:text-white transition-colors border-b border-neutral-800 mb-2"
