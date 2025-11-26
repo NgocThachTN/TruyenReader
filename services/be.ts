@@ -422,6 +422,30 @@ export const sendChatMessage = async (receiverId: number, message: string) => {
   }
 };
 
+export const markChatMessagesAsRead = async (senderId: number) => {
+  const token = getAuthToken();
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat/mark-read/${senderId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Không thể đánh dấu đã đọc");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Mark chat messages as read error:", error);
+    throw error;
+  }
+};
+
 export interface ConversationUser {
   userId: number;
   fullname: string;

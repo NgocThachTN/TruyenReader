@@ -12,6 +12,7 @@ import {
   getChatMessagesWithUser,
   getOnlineUsers,
   sendChatMessage,
+  markChatMessagesAsRead,
 } from "../services/be";
 
 interface ChatMessage {
@@ -36,6 +37,7 @@ const Chat: React.FC = () => {
   const [sending, setSending] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const activeUserIdRef = useRef<number | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const location = useLocation();
   const searchParams = useMemo(
@@ -89,10 +91,32 @@ const Chat: React.FC = () => {
     activeUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
 
-  // Đảm bảo khi vào trang chat luôn scroll lên đầu
+  // Đảm bảo khi vào trang chat luôn scroll lên đầu (toàn trang)
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    const id = window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
+    return () => {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "auto";
+      }
+      window.cancelAnimationFrame(id);
+    };
   }, []);
+
+  // Khi đã load xong tin nhắn cho cuộc trò chuyện hiện tại, cuộn khung chat xuống cuối
+  useEffect(() => {
+    if (!selectedUserId || loadingMessages || messages.length === 0) return;
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const timeoutId = window.setTimeout(() => {
+      container.scrollTop = container.scrollHeight;
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [selectedUserId, loadingMessages, messages.length]);
 
   const currentUserId = currentUserInfo?.userId ?? null;
 
@@ -107,12 +131,46 @@ const Chat: React.FC = () => {
     [onlineUsers, selectedUserId]
   );
 
+  // Sắp xếp cuộc trò chuyện: cuộc có tin nhắn mới nhất lên trên
+  const sortConversationsByLatestMessage = (
+    list: ConversationItem[]
+  ): ConversationItem[] => {
+    return [...list].sort((a, b) => {
+      const aTime = a.lastMessage
+        ? new Date(a.lastMessage.createdAt).getTime()
+        : 0;
+      const bTime = b.lastMessage
+        ? new Date(b.lastMessage.createdAt).getTime()
+        : 0;
+      return bTime - aTime;
+    });
+  };
+
+  const markConversationAsReadLocally = (otherUserId: number) => {
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.user.userId === otherUserId
+          ? {
+              ...c,
+              unreadCount: 0,
+              lastMessage: c.lastMessage
+                ? {
+                    ...c.lastMessage,
+                    isRead: true,
+                  }
+                : c.lastMessage,
+            }
+          : c
+      )
+    );
+  };
+
   const loadConversations = async () => {
     setLoading(true);
     setError(null);
     try {
       const data: ConversationsResponse = await getConversations();
-      const list = data.conversations || [];
+      const list = sortConversationsByLatestMessage(data.conversations || []);
       setConversations(list);
 
       // Ưu tiên userId từ query ?userId=...
@@ -124,12 +182,24 @@ const Chat: React.FC = () => {
           convUser?.fullname || initialUserNameFromQuery || ""
         );
         await loadMessages(initialUserId);
+        try {
+          await markChatMessagesAsRead(initialUserId);
+          markConversationAsReadLocally(initialUserId);
+        } catch (e) {
+          console.warn("Failed to mark messages as read", e);
+        }
         setHasAppliedInitialUser(true);
       } else if (!selectedUserId && list.length > 0) {
         const firstUser = list[0].user;
         setSelectedUserId(firstUser.userId);
         setSelectedUserName(firstUser.fullname);
         await loadMessages(firstUser.userId);
+        try {
+          await markChatMessagesAsRead(firstUser.userId);
+          markConversationAsReadLocally(firstUser.userId);
+        } catch (e) {
+          console.warn("Failed to mark messages as read", e);
+        }
       }
     } catch (err: any) {
       setError(err.message || "Không thể tải danh sách cuộc trò chuyện");
@@ -156,12 +226,18 @@ const Chat: React.FC = () => {
         message: m.message ?? m.content ?? "",
         createdAt: m.createdAt ?? m.sentAt ?? new Date().toISOString(),
       }));
-      setMessages(
-        messagesData.sort(
-          (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        )
+      const sortedMessages = messagesData.sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
+      setMessages(sortedMessages);
+      // Sau khi load xong tin nhắn cho user này, cuộn khung chat xuống cuối
+      const container = messagesContainerRef.current;
+      if (container) {
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 0);
+      }
     } catch (err: any) {
       setError(err.message || "Không thể tải tin nhắn");
     } finally {
@@ -214,7 +290,14 @@ const Chat: React.FC = () => {
           ) {
             return prev;
           }
-          return [...prev, mapped];
+          const next = [...prev, mapped];
+          const container = messagesContainerRef.current;
+          if (container) {
+            setTimeout(() => {
+              container.scrollTop = container.scrollHeight;
+            }, 0);
+          }
+          return next;
         });
 
         // Cập nhật sơ bộ conversations (unread + lastMessage)
@@ -227,7 +310,7 @@ const Chat: React.FC = () => {
           if (!existing) {
             return prev;
           }
-          return prev.map((c) =>
+          const updated = prev.map((c) =>
             c.user.userId === otherUserId
               ? {
                   ...c,
@@ -252,6 +335,7 @@ const Chat: React.FC = () => {
                 }
               : c
           );
+          return sortConversationsByLatestMessage(updated);
         });
       });
     }
@@ -273,22 +357,27 @@ const Chat: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSelectConversation = (conv: ConversationItem) => {
-    setSelectedUserId(conv.user.userId);
-    setSelectedUserName(conv.user.fullname);
+  const openConversation = async (userId: number, fullname: string) => {
+    setSelectedUserId(userId);
+    setSelectedUserName(fullname);
     if (socketRef.current) {
-      socketRef.current.emit("joinChat", conv.user.userId);
+      socketRef.current.emit("joinChat", userId);
     }
-    loadMessages(conv.user.userId);
+    await loadMessages(userId);
+    try {
+      await markChatMessagesAsRead(userId);
+      markConversationAsReadLocally(userId);
+    } catch (e) {
+      console.warn("Failed to mark messages as read", e);
+    }
+  };
+
+  const handleSelectConversation = (conv: ConversationItem) => {
+    openConversation(conv.user.userId, conv.user.fullname);
   };
 
   const handleSelectOnlineUser = (user: OnlineUserItem) => {
-    setSelectedUserId(user.userId);
-    setSelectedUserName(user.fullname);
-    if (socketRef.current) {
-      socketRef.current.emit("joinChat", user.userId);
-    }
-    loadMessages(user.userId);
+    openConversation(user.userId, user.fullname);
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -306,20 +395,18 @@ const Chat: React.FC = () => {
           receiverId: selectedUserId,
           message: text,
         });
-        // Optimistic update UI
-        const optimistic: ChatMessage = {
-          messageId: Date.now(),
-          senderId: currentUserId || 0,
-          receiverId: selectedUserId,
-          message: text,
-          createdAt: new Date().toISOString(),
-        };
-        setMessages((prev) => [...prev, optimistic]);
+        // UI sẽ được cập nhật khi server phát sự kiện "newMessage"
       } else {
         // Fallback REST nếu socket không kết nối
         await sendChatMessage(selectedUserId, text);
         await loadMessages(selectedUserId);
         await loadConversations();
+        const container = messagesContainerRef.current;
+        if (container) {
+          setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+          }, 0);
+        }
       }
     } catch (err: any) {
       alert(err.message || "Gửi tin nhắn thất bại");
@@ -459,7 +546,10 @@ const Chat: React.FC = () => {
               </div>
             )}
           </div>
-          <div className="flex-1 max-h-[calc(100vh-220px)] overflow-y-auto px-2 md:px-4 py-4 space-y-4">
+          <div
+            ref={messagesContainerRef}
+            className="flex-1 max-h-[calc(100vh-220px)] overflow-y-auto px-2 md:px-4 py-4 space-y-4"
+          >
             {!selectedUserId ? (
               <p className="text-sm text-neutral-500">
                 Hãy chọn một người để bắt đầu trò chuyện.
