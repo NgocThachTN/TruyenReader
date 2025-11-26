@@ -581,10 +581,25 @@ const ComicDetail: React.FC = () => {
                       className="p-6 border-b border-neutral-800 last:border-0"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-rose-500 font-bold text-lg flex-shrink-0">
-                          {comment.user?.fullname
-                            ? comment.user.fullname.charAt(0).toUpperCase()
-                            : "U"}
+                        <div className="relative w-10 h-10 flex-shrink-0">
+                          {comment.user?.avatar ? (
+                            <img
+                              src={comment.user.avatar}
+                              alt={comment.user.fullname || "Avatar"}
+                              className="w-10 h-10 rounded-full object-cover border border-neutral-800"
+                              loading="lazy"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-rose-500 font-bold text-lg">
+                              {comment.user?.fullname
+                                ? comment.user.fullname.charAt(0).toUpperCase()
+                                : "U"}
+                            </div>
+                          )}
+                          {comment.user?.isOnline && (
+                            <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-neutral-900" />
+                          )}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-2">

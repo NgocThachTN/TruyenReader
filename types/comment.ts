@@ -13,11 +13,13 @@ export interface CommentItem {
   createdAt: string;
   updatedAt: string;
   user?: {
+    userId: number;
     fullname: string;
+    avatar?: string;
+    isOnline?: boolean;
   };
 }
 
 export interface CommentsResponse {
   comments: CommentItem[];
 }
-

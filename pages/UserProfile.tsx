@@ -143,28 +143,28 @@ const UserProfile: React.FC = () => {
                 Gửi tin nhắn
               </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 bg-neutral-950 border border-neutral-800">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4">
+              <div className="p-3 sm:p-4 bg-neutral-950 border border-neutral-800">
                 <p className="text-neutral-500 text-xs uppercase tracking-widest">
                   Truyện yêu thích
                 </p>
-                <p className="text-3xl font-black">
+                <p className="text-2xl sm:text-3xl font-black">
                   {profile.favorites?.length || 0}
                 </p>
               </div>
-              <div className="p-4 bg-neutral-950 border border-neutral-800">
+              <div className="p-3 sm:p-4 bg-neutral-950 border border-neutral-800">
                 <p className="text-neutral-500 text-xs uppercase tracking-widest">
                   Lịch sử đọc
                 </p>
-                <p className="text-3xl font-black">
+                <p className="text-2xl sm:text-3xl font-black">
                   {profile.readingHistory?.length || 0}
                 </p>
               </div>
-              <div className="p-4 bg-neutral-950 border border-neutral-800">
+              <div className="p-3 sm:p-4 bg-neutral-950 border border-neutral-800">
                 <p className="text-neutral-500 text-xs uppercase tracking-widest">
                   Vai trò
                 </p>
-                <p className="text-2xl font-bold capitalize">
+                <p className="text-xl sm:text-2xl font-bold capitalize">
                   {profile.user.role || "user"}
                 </p>
               </div>
