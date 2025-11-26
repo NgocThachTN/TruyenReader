@@ -396,3 +396,140 @@ export const uploadAvatar = async (
     throw error;
   }
 };
+
+export const sendChatMessage = async (receiverId: number, message: string) => {
+  const token = getAuthToken();
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ receiverId, message }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Gửi tin nhắn thất bại");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Send chat message error:", error);
+    throw error;
+  }
+};
+
+export interface ConversationUser {
+  userId: number;
+  fullname: string;
+  avatar?: string;
+}
+
+export interface ConversationLastMessage {
+  messageId: number;
+  senderId: number;
+  receiverId: number;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConversationItem {
+  user: ConversationUser;
+  lastMessage: ConversationLastMessage | null;
+  unreadCount: number;
+}
+
+export interface ConversationsResponse {
+  conversations: ConversationItem[];
+}
+
+export interface OnlineUserItem {
+  userId: number;
+  fullname: string;
+  email: string;
+  avatar?: string;
+}
+
+export interface OnlineUsersResponse {
+  onlineUsers: OnlineUserItem[];
+}
+
+export const getConversations = async (): Promise<ConversationsResponse> => {
+  const token = getAuthToken();
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat/conversations`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || "Không thể tải danh sách cuộc trò chuyện"
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Get conversations error:", error);
+    throw error;
+  }
+};
+
+export const getChatMessagesWithUser = async (userId: number) => {
+  const token = getAuthToken();
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat/messages/${userId}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || "Không thể tải tin nhắn cuộc trò chuyện"
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Get chat messages error:", error);
+    throw error;
+  }
+};
+
+export const getOnlineUsers = async (): Promise<OnlineUsersResponse> => {
+  const token = getAuthToken();
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat/online-users`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || "Không thể tải danh sách user đang online"
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Get online users error:", error);
+    throw error;
+  }
+};

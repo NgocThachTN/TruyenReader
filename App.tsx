@@ -27,6 +27,7 @@ import { useEffect, useState } from "react";
 import RequireAuth from "./routes/RequireAuth";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
+import Chat from "./pages/Chat";
 
 const Layout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
@@ -223,6 +224,16 @@ const AnimatedRoutes = () => {
               <RequireAuth>
                 <PageTransition>
                   <Profile />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <Chat />
                 </PageTransition>
               </RequireAuth>
             }

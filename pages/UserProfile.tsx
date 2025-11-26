@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import { getUserProfileById } from "../services/be";
 import { ProfileResponse, ReadingHistoryItem } from "../types/profile";
@@ -12,6 +12,7 @@ const buildAvatarSrc = (avatar?: string, version?: number) => {
 
 const UserProfile: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,6 +78,18 @@ const UserProfile: React.FC = () => {
     );
   }
 
+  const handleGoToChat = () => {
+    if (!profile?.user?.userId) return;
+    const targetName =
+      profile.user.fullname?.trim() ||
+      (profile.user.email ? profile.user.email.split("@")[0] : "");
+    navigate(
+      `/chat?userId=${profile.user.userId}${
+        targetName ? `&fullname=${encodeURIComponent(targetName)}` : ""
+      }`
+    );
+  };
+
   return (
     <div className="min-h-screen bg-neutral-950 pb-12 text-white">
       <div className="container mx-auto px-4 py-10 space-y-10">
@@ -120,6 +133,15 @@ const UserProfile: React.FC = () => {
                   {profile.isOnline ? "Đang online" : "Offline"}
                 </span>
               </p>
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={handleGoToChat}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-sm font-bold uppercase tracking-wider"
+              >
+                Gửi tin nhắn
+              </button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="p-4 bg-neutral-950 border border-neutral-800">
