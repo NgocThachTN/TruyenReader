@@ -284,6 +284,11 @@ const Chat: React.FC = () => {
         // Nếu đang mở chat với user này thì cập nhật UI ngay
         const activeId = activeUserIdRef.current;
         setMessages((prev) => {
+          // Nếu là tin mình vừa gửi thì UI đã có bản optimistic, không cần thêm lần nữa
+          if (mapped.senderId === currentUserId) {
+            return prev;
+          }
+
           if (
             !activeId ||
             (mapped.senderId !== activeId && mapped.receiverId !== activeId)
@@ -395,7 +400,25 @@ const Chat: React.FC = () => {
           receiverId: selectedUserId,
           message: text,
         });
-        // UI sẽ được cập nhật khi server phát sự kiện "newMessage"
+        // Optimistic update UI cho phía mình, server sẽ gửi "newMessage"
+        // nhưng trong listener đã chặn không append lại lần nữa cho sender
+        const optimistic: ChatMessage = {
+          messageId: Date.now(),
+          senderId: currentUserId || 0,
+          receiverId: selectedUserId,
+          message: text,
+          createdAt: new Date().toISOString(),
+        };
+        setMessages((prev) => {
+          const next = [...prev, optimistic];
+          const container = messagesContainerRef.current;
+          if (container) {
+            setTimeout(() => {
+              container.scrollTop = container.scrollHeight;
+            }, 0);
+          }
+          return next;
+        });
       } else {
         // Fallback REST nếu socket không kết nối
         await sendChatMessage(selectedUserId, text);
