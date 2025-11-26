@@ -302,6 +302,15 @@ const Chat: React.FC = () => {
         // Nếu đang mở chat với user này thì cập nhật UI ngay
         const activeId = activeUserIdRef.current;
         setMessages((prev) => {
+          // Nếu messageId đã tồn tại trong state thì bỏ qua để tránh bị trùng
+          if (
+            mapped.messageId &&
+            prev.some((m) => m.messageId === mapped.messageId)
+          ) {
+            return prev;
+          }
+
+          // Nếu là tin mình vừa gửi thì đã có bản optimistic, không cần thêm lần nữa
           // Nếu là tin mình vừa gửi thì UI đã có bản optimistic, không cần thêm lần nữa
           if (mapped.senderId === currentUserId) {
             return prev;
