@@ -89,6 +89,11 @@ const Chat: React.FC = () => {
     activeUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
 
+  // Đảm bảo khi vào trang chat luôn scroll lên đầu
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const currentUserId = currentUserInfo?.userId ?? null;
 
   const selectedConversationUser = useMemo(
