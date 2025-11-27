@@ -72,7 +72,6 @@ const SingleModeViewer = React.memo(
     const [aspectRatio, setAspectRatio] = useState<number>(16 / 9);
     const [isTallScreen, setIsTallScreen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    const [isSmallScreen, setIsSmallScreen] = useState(false);
 
     useEffect(() => {
       const updateScreenInfo = () => {
@@ -86,8 +85,6 @@ const SingleModeViewer = React.memo(
         setIsTallScreen(ratio < 0.55);
         // Mobile: width < 768px (Tailwind's md breakpoint)
         setIsMobile(width < 768);
-        // Small screen: width < 640px (Tailwind's sm breakpoint)
-        setIsSmallScreen(width < 640);
       };
 
       updateScreenInfo();
@@ -133,14 +130,12 @@ const SingleModeViewer = React.memo(
         : "bottom-4 sm:bottom-6" // Standard mobile: standard position
       : "bottom-6"; // Desktop: standard position
 
-    // Calculate translateY offset in pixels for mobile, optimized for 18:9 screens
-    const translateYOffset = isMobile
+    // Add offset to push image up on mobile, optimized for 18:9 screens
+    const imageOffset = isMobile
       ? isTallScreen
-        ? -40 // Tall mobile (18:9): push up 40px (equivalent to -translate-y-10)
-        : isSmallScreen
-        ? -48 // Standard mobile small: push up 48px
-        : -56 // Standard mobile large: push up 56px
-      : 0; // Desktop: no offset
+        ? "-translate-y-24" // Tall mobile (18:9): push up even higher to reduce black space
+        : "-translate-y-12 sm:-translate-y-14" // Standard mobile: push up higher
+      : ""; // Desktop: no offset
 
     // Use justify-start for tall screens to start from top, center for others
     const containerJustify =
@@ -160,11 +155,11 @@ const SingleModeViewer = React.memo(
       >
         <div
           style={{
-            transform: `scale(${zoom}) translateY(${translateYOffset}px)`,
+            transform: `scale(${zoom})`,
             transition: "transform 0.2s ease-out",
             transformOrigin: transformOrigin,
           }}
-          className="relative flex items-center justify-center w-full h-full"
+          className={`relative flex items-center justify-center w-full h-full ${imageOffset}`}
         >
           {relevantIndices.map((index) => (
             <img
