@@ -293,6 +293,14 @@ const ChapterViewer: React.FC = () => {
     };
   }, [isAutoScroll, autoScrollSpeed, readingMode]);
 
+  // Reset currentPage when chapter changes
+  useEffect(() => {
+    if (apiUrl) {
+      setCurrentPage(0);
+      window.scrollTo(0, 0);
+    }
+  }, [apiUrl]);
+
   // Data Fetching
   useEffect(() => {
     if (!apiUrl) return;
@@ -320,8 +328,6 @@ const ChapterViewer: React.FC = () => {
         );
         if (savedProgress && savedProgress.lastPage) {
           setCurrentPage(savedProgress.lastPage);
-        } else {
-          setCurrentPage(0);
         }
 
         window.scrollTo(0, 0);
