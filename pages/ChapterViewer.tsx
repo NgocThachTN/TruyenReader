@@ -68,22 +68,28 @@ const SingleModeViewer = React.memo(
     onNext: () => void;
     onToggleNav: () => void;
   }) => {
-    // Detect screen aspect ratio for optimization
+    // Detect screen aspect ratio and device type for mobile optimization
     const [aspectRatio, setAspectRatio] = useState<number>(16 / 9);
     const [isTallScreen, setIsTallScreen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
-      const updateAspectRatio = () => {
-        const ratio = window.innerWidth / window.innerHeight;
+      const updateScreenInfo = () => {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const ratio = width / height;
+
         setAspectRatio(ratio);
         // Tall screens: ratio < 0.55 (roughly 18:9 and above)
         // Standard screens: ratio >= 0.55 (16:9 and similar)
         setIsTallScreen(ratio < 0.55);
+        // Mobile: width < 768px (Tailwind's md breakpoint)
+        setIsMobile(width < 768);
       };
 
-      updateAspectRatio();
-      window.addEventListener("resize", updateAspectRatio);
-      return () => window.removeEventListener("resize", updateAspectRatio);
+      updateScreenInfo();
+      window.addEventListener("resize", updateScreenInfo);
+      return () => window.removeEventListener("resize", updateScreenInfo);
     }, []);
 
     // Render current, prev, and next images to ensure they are pre-loaded/decoded
@@ -92,17 +98,37 @@ const SingleModeViewer = React.memo(
       (i) => i >= 0 && i < totalImages
     );
 
-    // Optimize padding and max-height based on screen aspect ratio
-    // For tall screens (18:9+), use less padding to maximize image space
-    // For standard screens (16:9), use more padding for better visual balance
-    const containerPadding = isTallScreen ? "py-1 sm:py-2" : "py-2 sm:py-4";
-    const maxHeightClass = isTallScreen
-      ? "max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-2rem)]" // Tall screens: minimal padding
-      : "max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)]"; // Standard screens: more padding
+    // Mobile optimization: adjust padding, max-height, and click zones based on screen type
+    const containerPadding = isMobile
+      ? isTallScreen
+        ? "py-1" // Tall mobile: minimal padding
+        : "py-2 sm:py-4" // Standard mobile: more padding
+      : "py-4"; // Desktop: standard padding
 
-    // Optimize click zones for different screen types
+    const maxHeightClass = isMobile
+      ? isTallScreen
+        ? "max-h-[calc(100vh-0.5rem)]" // Tall mobile: maximize space
+        : "max-h-[calc(100vh-2rem)]" // Standard mobile: standard spacing
+      : "max-h-screen"; // Desktop: full screen
+
+    // Optimize click zones for mobile
     // Tall screens need narrower zones to avoid accidental clicks
-    const clickZoneWidth = isTallScreen ? 0.25 : 0.3;
+    const clickZoneWidth = isMobile
+      ? isTallScreen
+        ? 0.25 // Tall mobile: narrower zones
+        : 0.3 // Standard mobile: standard zones
+      : 0.3; // Desktop: standard zones
+
+    // Transform origin: center for tall screens (better fit), top for standard
+    const transformOrigin =
+      isMobile && isTallScreen ? "center center" : "top center";
+
+    // Page indicator position: adjust for mobile screen types
+    const indicatorBottom = isMobile
+      ? isTallScreen
+        ? "bottom-3" // Tall mobile: closer to bottom
+        : "bottom-4 sm:bottom-6" // Standard mobile: standard position
+      : "bottom-6"; // Desktop: standard position
 
     return (
       <div
@@ -120,7 +146,7 @@ const SingleModeViewer = React.memo(
           style={{
             transform: `scale(${zoom})`,
             transition: "transform 0.2s ease-out",
-            transformOrigin: isTallScreen ? "center center" : "top center",
+            transformOrigin: transformOrigin,
           }}
           className="relative flex items-center justify-center w-full h-full"
         >
@@ -140,11 +166,9 @@ const SingleModeViewer = React.memo(
           ))}
         </div>
 
-        {/* Page Indicator - Optimized position for different screen types */}
+        {/* Page Indicator - Optimized position for different mobile screen types */}
         <div
-          className={`fixed left-1/2 -translate-x-1/2 bg-neutral-900/80 text-neutral-300 px-3 sm:px-4 py-1 text-xs font-mono tracking-widest backdrop-blur-sm border border-neutral-800 transition-all duration-300 rounded-full z-50 ${
-            isTallScreen ? "bottom-3 sm:bottom-4" : "bottom-4 sm:bottom-6"
-          } ${
+          className={`fixed ${indicatorBottom} left-1/2 -translate-x-1/2 bg-neutral-900/80 text-neutral-300 px-3 sm:px-4 py-1 text-xs font-mono tracking-widest backdrop-blur-sm border border-neutral-800 transition-all duration-300 rounded-full z-50 ${
             showNav
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-4 pointer-events-none"
@@ -527,7 +551,7 @@ const ChapterViewer: React.FC = () => {
   // Scroll Width Classes
   const getContainerWidth = () => {
     if (readingMode === "single")
-      return "w-full h-screen flex items-center justify-center overflow-hidden";
+      return "w-full h-screen flex items-center justify-center";
     switch (scrollWidth) {
       case "md":
         return "max-w-2xl shadow-2xl shadow-black";
