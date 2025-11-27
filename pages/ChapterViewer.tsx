@@ -102,8 +102,8 @@ const SingleModeViewer = React.memo(
     // Use asymmetric padding to push image up on mobile
     const containerPadding = isMobile
       ? isTallScreen
-        ? "pt-2 pb-1" // Tall mobile: more top padding to push image up
-        : "pt-4 pb-2 sm:pt-6 sm:pb-4" // Standard mobile: more top padding
+        ? "pt-6 pb-1" // Tall mobile: more top padding to push image up higher
+        : "pt-8 pb-2 sm:pt-10 sm:pb-4" // Standard mobile: more top padding
       : "py-4"; // Desktop: standard padding
 
     const maxHeightClass = isMobile
@@ -134,8 +134,8 @@ const SingleModeViewer = React.memo(
     // Add offset to push image up on mobile
     const imageOffset = isMobile
       ? isTallScreen
-        ? "-translate-y-3" // Tall mobile: push up slightly
-        : "-translate-y-4 sm:-translate-y-6" // Standard mobile: push up
+        ? "-translate-y-6" // Tall mobile: push up higher
+        : "-translate-y-8 sm:-translate-y-10" // Standard mobile: push up higher
       : ""; // Desktop: no offset
 
     return (
