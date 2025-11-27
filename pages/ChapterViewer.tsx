@@ -99,10 +99,11 @@ const SingleModeViewer = React.memo(
     );
 
     // Mobile optimization: adjust padding, max-height, and click zones based on screen type
+    // Use asymmetric padding to push image up on mobile
     const containerPadding = isMobile
       ? isTallScreen
-        ? "py-1" // Tall mobile: minimal padding
-        : "py-2 sm:py-4" // Standard mobile: more padding
+        ? "pt-2 pb-1" // Tall mobile: more top padding to push image up
+        : "pt-4 pb-2 sm:pt-6 sm:pb-4" // Standard mobile: more top padding
       : "py-4"; // Desktop: standard padding
 
     const maxHeightClass = isMobile
@@ -130,6 +131,13 @@ const SingleModeViewer = React.memo(
         : "bottom-4 sm:bottom-6" // Standard mobile: standard position
       : "bottom-6"; // Desktop: standard position
 
+    // Add offset to push image up on mobile
+    const imageOffset = isMobile
+      ? isTallScreen
+        ? "-translate-y-3" // Tall mobile: push up slightly
+        : "-translate-y-4 sm:-translate-y-6" // Standard mobile: push up
+      : ""; // Desktop: no offset
+
     return (
       <div
         className={`flex flex-col items-center justify-center w-full h-full relative select-none ${containerPadding}`}
@@ -148,7 +156,7 @@ const SingleModeViewer = React.memo(
             transition: "transform 0.2s ease-out",
             transformOrigin: transformOrigin,
           }}
-          className="relative flex items-center justify-center w-full h-full"
+          className={`relative flex items-center justify-center w-full h-full ${imageOffset}`}
         >
           {relevantIndices.map((index) => (
             <img
@@ -216,6 +224,9 @@ const ChapterViewer: React.FC = () => {
   const [showGoTop, setShowGoTop] = useState(false);
   const lastScrollY = useRef(0);
   const scrollTick = useRef(false);
+
+  // Mobile tall screen detection for scroll prevention
+  const [isMobileTallScreen, setIsMobileTallScreen] = useState(false);
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -357,6 +368,63 @@ const ChapterViewer: React.FC = () => {
     }
   }, [apiUrl]);
 
+  // Detect mobile tall screen for scroll prevention
+  useEffect(() => {
+    const checkMobileTallScreen = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const ratio = width / height;
+      // Mobile: width < 768px AND tall screen: ratio < 0.55
+      setIsMobileTallScreen(width < 768 && ratio < 0.55);
+    };
+
+    checkMobileTallScreen();
+    window.addEventListener("resize", checkMobileTallScreen);
+    return () => window.removeEventListener("resize", checkMobileTallScreen);
+  }, []);
+
+  // Prevent scroll on body when in single mode on mobile tall screen
+  useEffect(() => {
+    if (readingMode === "single" && isMobileTallScreen) {
+      // Prevent scroll
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      // Lock scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+
+      return () => {
+        // Restore scroll
+        document.body.style.overflow = "";
+        document.documentElement.style.overflow = "";
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        window.scrollTo(0, scrollY);
+      };
+    } else {
+      // Restore scroll when not in single mode or not mobile tall screen
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+    }
+  }, [readingMode, isMobileTallScreen]);
+
+  // Reset scroll position when page changes in single mode
+  useEffect(() => {
+    if (readingMode === "single") {
+      window.scrollTo(0, 0);
+      // Also reset on body if it's fixed
+      if (isMobileTallScreen) {
+        document.body.style.top = "0px";
+      }
+    }
+  }, [currentPage, readingMode, isMobileTallScreen]);
+
   // Data Fetching
   useEffect(() => {
     if (!apiUrl) return;
@@ -485,23 +553,36 @@ const ChapterViewer: React.FC = () => {
       if (!data) return;
       const totalPages = images.length;
 
+      // Reset scroll immediately before page change
+      window.scrollTo(0, 0);
+      if (isMobileTallScreen && readingMode === "single") {
+        document.body.style.top = "0px";
+      }
+
       if (direction === "next") {
         if (currentPage < totalPages - 1) {
           setCurrentPage((prev) => prev + 1);
-          window.scrollTo(0, 0);
         } else if (nextChapter) {
           handleChapterChange(nextChapter);
         }
       } else {
         if (currentPage > 0) {
           setCurrentPage((prev) => prev - 1);
-          window.scrollTo(0, 0);
         } else if (prevChapter) {
           handleChapterChange(prevChapter);
         }
       }
     },
-    [currentPage, data, images.length, nextChapter, prevChapter]
+    [
+      currentPage,
+      data,
+      images.length,
+      nextChapter,
+      prevChapter,
+      isMobileTallScreen,
+      readingMode,
+      handleChapterChange,
+    ]
   );
 
   const scrollToTop = () => {
@@ -550,8 +631,11 @@ const ChapterViewer: React.FC = () => {
 
   // Scroll Width Classes
   const getContainerWidth = () => {
-    if (readingMode === "single")
-      return "w-full h-screen flex items-center justify-center";
+    if (readingMode === "single") {
+      // Add overflow-hidden for mobile tall screen to prevent scroll
+      const overflowClass = isMobileTallScreen ? "overflow-hidden" : "";
+      return `w-full h-screen flex items-center justify-center ${overflowClass}`;
+    }
     switch (scrollWidth) {
       case "md":
         return "max-w-2xl shadow-2xl shadow-black";
