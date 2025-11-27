@@ -68,19 +68,49 @@ const SingleModeViewer = React.memo(
     onNext: () => void;
     onToggleNav: () => void;
   }) => {
+    // Detect screen aspect ratio for optimization
+    const [aspectRatio, setAspectRatio] = useState<number>(16 / 9);
+    const [isTallScreen, setIsTallScreen] = useState(false);
+
+    useEffect(() => {
+      const updateAspectRatio = () => {
+        const ratio = window.innerWidth / window.innerHeight;
+        setAspectRatio(ratio);
+        // Tall screens: ratio < 0.55 (roughly 18:9 and above)
+        // Standard screens: ratio >= 0.55 (16:9 and similar)
+        setIsTallScreen(ratio < 0.55);
+      };
+
+      updateAspectRatio();
+      window.addEventListener("resize", updateAspectRatio);
+      return () => window.removeEventListener("resize", updateAspectRatio);
+    }, []);
+
     // Render current, prev, and next images to ensure they are pre-loaded/decoded
     // Using unique keys ensures the DOM elements persist during transitions, eliminating flicker
     const relevantIndices = [pageIndex - 1, pageIndex, pageIndex + 1].filter(
       (i) => i >= 0 && i < totalImages
     );
 
+    // Optimize padding and max-height based on screen aspect ratio
+    // For tall screens (18:9+), use less padding to maximize image space
+    // For standard screens (16:9), use more padding for better visual balance
+    const containerPadding = isTallScreen ? "py-1 sm:py-2" : "py-2 sm:py-4";
+    const maxHeightClass = isTallScreen
+      ? "max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-2rem)]" // Tall screens: minimal padding
+      : "max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)]"; // Standard screens: more padding
+
+    // Optimize click zones for different screen types
+    // Tall screens need narrower zones to avoid accidental clicks
+    const clickZoneWidth = isTallScreen ? 0.25 : 0.3;
+
     return (
       <div
-        className="flex flex-col items-center justify-center w-full h-full relative select-none py-4"
+        className={`flex flex-col items-center justify-center w-full h-full relative select-none ${containerPadding}`}
         onClick={(e) => {
           const width = e.currentTarget.clientWidth;
           const clickX = e.nativeEvent.offsetX;
-          const zoneWidth = width * 0.3;
+          const zoneWidth = width * clickZoneWidth;
           if (clickX < zoneWidth) onPrev();
           else if (clickX > width - zoneWidth) onNext();
           else onToggleNav();
@@ -90,7 +120,7 @@ const SingleModeViewer = React.memo(
           style={{
             transform: `scale(${zoom})`,
             transition: "transform 0.2s ease-out",
-            transformOrigin: "top center",
+            transformOrigin: isTallScreen ? "center center" : "top center",
           }}
           className="relative flex items-center justify-center w-full h-full"
         >
@@ -100,7 +130,7 @@ const SingleModeViewer = React.memo(
               src={images[index]}
               alt={`Page ${index + 1}`}
               loading="eager"
-              className={`max-w-full max-h-screen object-contain shadow-2xl transition-opacity duration-75 ${
+              className={`max-w-full ${maxHeightClass} object-contain shadow-2xl transition-opacity duration-75 ${
                 index === pageIndex
                   ? "relative opacity-100 z-10"
                   : "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 -z-10 pointer-events-none"
@@ -110,9 +140,11 @@ const SingleModeViewer = React.memo(
           ))}
         </div>
 
-        {/* Page Indicator */}
+        {/* Page Indicator - Optimized position for different screen types */}
         <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 bg-neutral-900/80 text-neutral-300 px-4 py-1 text-xs font-mono tracking-widest backdrop-blur-sm border border-neutral-800 transition-all duration-300 rounded-full z-50 ${
+          className={`fixed left-1/2 -translate-x-1/2 bg-neutral-900/80 text-neutral-300 px-3 sm:px-4 py-1 text-xs font-mono tracking-widest backdrop-blur-sm border border-neutral-800 transition-all duration-300 rounded-full z-50 ${
+            isTallScreen ? "bottom-3 sm:bottom-4" : "bottom-4 sm:bottom-6"
+          } ${
             showNav
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-4 pointer-events-none"
@@ -495,7 +527,7 @@ const ChapterViewer: React.FC = () => {
   // Scroll Width Classes
   const getContainerWidth = () => {
     if (readingMode === "single")
-      return "w-full h-screen flex items-center justify-center";
+      return "w-full h-screen flex items-center justify-center overflow-hidden";
     switch (scrollWidth) {
       case "md":
         return "max-w-2xl shadow-2xl shadow-black";
