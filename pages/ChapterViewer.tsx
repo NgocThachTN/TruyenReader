@@ -99,11 +99,11 @@ const SingleModeViewer = React.memo(
     );
 
     // Mobile optimization: adjust padding, max-height, and click zones based on screen type
-    // Use asymmetric padding to push image up on mobile
+    // Use asymmetric padding to push image up on mobile, especially for 18:9 screens
     const containerPadding = isMobile
       ? isTallScreen
-        ? "pt-6 pb-1" // Tall mobile: more top padding to push image up higher
-        : "pt-8 pb-2 sm:pt-10 sm:pb-4" // Standard mobile: more top padding
+        ? "pt-2 pb-1" // Tall mobile (18:9): minimal top padding to push image up
+        : "pt-4 pb-2 sm:pt-6 sm:pb-4" // Standard mobile: more top padding
       : "py-4"; // Desktop: standard padding
 
     const maxHeightClass = isMobile
@@ -120,9 +120,8 @@ const SingleModeViewer = React.memo(
         : 0.3 // Standard mobile: standard zones
       : 0.3; // Desktop: standard zones
 
-    // Transform origin: center for tall screens (better fit), top for standard
-    const transformOrigin =
-      isMobile && isTallScreen ? "center center" : "top center";
+    // Transform origin: top for tall screens to keep image at top, top for standard
+    const transformOrigin = "top center";
 
     // Page indicator position: adjust for mobile screen types
     const indicatorBottom = isMobile
@@ -131,16 +130,19 @@ const SingleModeViewer = React.memo(
         : "bottom-4 sm:bottom-6" // Standard mobile: standard position
       : "bottom-6"; // Desktop: standard position
 
-    // Add offset to push image up on mobile
+    // Add offset to push image up on mobile, optimized for 18:9 screens
     const imageOffset = isMobile
       ? isTallScreen
-        ? "-translate-y-6" // Tall mobile: push up higher
-        : "-translate-y-8 sm:-translate-y-10" // Standard mobile: push up higher
+        ? "-translate-y-16" // Tall mobile (18:9): push up much higher
+        : "-translate-y-10 sm:-translate-y-12" // Standard mobile: push up higher
       : ""; // Desktop: no offset
+
+    // Keep justify-center to maintain proper centering
+    const containerJustify = "justify-center";
 
     return (
       <div
-        className={`flex flex-col items-center justify-center w-full h-full relative select-none ${containerPadding}`}
+        className={`flex flex-col items-center ${containerJustify} w-full h-full relative select-none ${containerPadding}`}
         onClick={(e) => {
           const width = e.currentTarget.clientWidth;
           const clickX = e.nativeEvent.offsetX;
