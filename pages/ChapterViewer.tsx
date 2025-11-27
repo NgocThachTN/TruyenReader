@@ -133,7 +133,7 @@ const SingleModeViewer = React.memo(
     // Add offset to push image up on mobile, optimized for 18:9 screens
     const imageOffset = isMobile
       ? isTallScreen
-        ? "-translate-y-20" // Tall mobile (18:9): push up much higher to reduce black space
+        ? "-translate-y-24" // Tall mobile (18:9): push up even higher to reduce black space
         : "-translate-y-12 sm:-translate-y-14" // Standard mobile: push up higher
       : ""; // Desktop: no offset
 
