@@ -38,10 +38,18 @@ const Header: React.FC = () => {
     const handleStorageChange = () => checkUser();
     window.addEventListener("storage", handleStorageChange);
 
+    // Listen for session expired event to clear user immediately
+    const handleSessionExpired = () => {
+      setUser(null);
+      setShowUserMenu(false);
+    };
+    window.addEventListener("auth:sessionExpired", handleSessionExpired);
+
     return () => {
       window.removeEventListener("storage", checkUser);
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("user:updated", checkUser as EventListener);
+      window.removeEventListener("auth:sessionExpired", handleSessionExpired);
     };
   }, []);
 

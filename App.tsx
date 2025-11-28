@@ -29,7 +29,7 @@ import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
-import { persistAuthSession } from "./services/authService";
+import { persistAuthSession, clearAuthSession } from "./services/authService";
 
 const Layout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
@@ -169,6 +169,7 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
                 type="button"
                 className="px-4 py-2 text-xs font-semibold uppercase tracking-wide bg-rose-600 hover:bg-rose-700 text-white rounded-none"
                 onClick={() => {
+                  clearAuthSession();
                   setIsSessionExpired(false);
                   navigate("/login");
                 }}
