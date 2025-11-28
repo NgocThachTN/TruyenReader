@@ -12,6 +12,10 @@ const CategoryList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, []);
+
+  useEffect(() => {
     const loadCategories = async () => {
       try {
         const result = await fetchCategories();
