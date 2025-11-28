@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { fetchComicDetail, getImageUrl } from "../services/api";
 import {
@@ -30,14 +30,23 @@ const ComicDetail: React.FC = () => {
   const [newComment, setNewComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
   const [lastReadEntry, setLastReadEntry] = useState<HistoryItem | null>(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     if (!slug) return;
     setLastReadEntry(null);
+    let isActive = true;
 
     const loadDetail = async () => {
       setLoading(true);
+
       try {
         const result = await fetchComicDetail(slug);
         // Sort chapters from newest (highest number) to oldest (lowest number)
@@ -46,45 +55,56 @@ const ComicDetail: React.FC = () => {
             return parseFloat(b.chapter_name) - parseFloat(a.chapter_name);
           });
         });
+
+        if (!isActive) return;
         setComic(result.data.item);
         setDomain(result.data.APP_DOMAIN_CDN_IMAGE);
 
-        // Check if comic is already in favorites
         const token = localStorage.getItem("token");
+
         if (token) {
+          void (async () => {
+            try {
+              const favResponse = await getFavorites();
+              const isFav = favResponse.favorites.some(
+                (fav) =>
+                  fav.comicId === result.data.item._id ||
+                  fav.comicSlug === result.data.item.slug
+              );
+              if (isActive) setIsFavorite(isFav);
+            } catch (favoritesError) {
+              console.error("Failed to check favorites:", favoritesError);
+            }
+          })();
+        } else if (isActive) {
+          setIsFavorite(false);
+        }
+
+        void (async () => {
           try {
-            const favResponse = await getFavorites();
-            const isFav = favResponse.favorites.some(
-              (fav) =>
-                fav.comicId === result.data.item._id ||
-                fav.comicSlug === result.data.item.slug
+            const historyList = await getHistory();
+            const historyItem = historyList.find(
+              (item) => item.comicSlug === result.data.item.slug
             );
-            setIsFavorite(isFav);
-          } catch (error) {
-            console.error("Failed to check favorites:", error);
+            if (isActive) setLastReadEntry(historyItem || null);
+          } catch (historyError) {
+            console.error("Failed to load reading history:", historyError);
           }
-        }
+        })();
 
-        try {
-          const historyList = await getHistory();
-          const historyItem = historyList.find(
-            (item) => item.comicSlug === result.data.item.slug
-          );
-          setLastReadEntry(historyItem || null);
-        } catch (historyError) {
-          console.error("Failed to load reading history:", historyError);
-        }
-
-        // Load comments
-        loadComments(slug);
+        void loadComments(slug);
       } catch (err) {
-        setError("Không thể tải thông tin truyện.");
+        if (isActive) setError("Không thể tải thông tin truyện.");
       } finally {
-        setLoading(false);
+        if (isActive) setLoading(false);
       }
     };
 
-    loadDetail();
+    void loadDetail();
+
+    return () => {
+      isActive = false;
+    };
   }, [slug]);
 
   const loadComments = async (comicSlug: string) => {
@@ -96,10 +116,12 @@ const ComicDetail: React.FC = () => {
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
+      if (!isMountedRef.current) return;
       setComments(sortedComments);
     } catch (error) {
       console.error("Failed to load comments:", error);
     } finally {
+      if (!isMountedRef.current) return;
       setLoadingComments(false);
     }
   };
