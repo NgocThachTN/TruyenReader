@@ -35,6 +35,7 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isProcessingToken, setIsProcessingToken] = useState(false);
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
 
   // Check for auth token in URL (Google Login Redirect)
   useEffect(() => {
@@ -121,6 +122,16 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
     setIsProcessingToken(false);
   }, [navigate, isProcessingToken]);
 
+  // Lắng nghe sự kiện hết hạn phiên đăng nhập từ authService
+  useEffect(() => {
+    const handleExpired = () => {
+      setIsSessionExpired(true);
+    };
+    window.addEventListener("auth:sessionExpired", handleExpired);
+    return () =>
+      window.removeEventListener("auth:sessionExpired", handleExpired);
+  }, []);
+
   // Hide header on reading page for immersion
   const isReading = location.pathname.startsWith("/chapter/");
 
@@ -134,18 +145,54 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {!isReading && <Header />}
-      <main className="flex-grow">{children}</main>
-      {!isReading && (
-        <footer className="bg-neutral-950 border-t border-neutral-800 py-8 text-center text-neutral-500 text-sm">
-          <p>
-            © {new Date().getFullYear()} TruyenReader. Designed for manga
-            lovers.
-          </p>
-        </footer>
+    <>
+      {/* Session expired modal */}
+      {isSessionExpired && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-neutral-900 border border-neutral-700 max-w-sm w-full p-6 shadow-2xl">
+            <h2 className="text-lg font-bold text-white mb-2">
+              Phiên đăng nhập đã hết hạn
+            </h2>
+            <p className="text-sm text-neutral-300 mb-6">
+              Vì lý do bảo mật, bạn cần đăng nhập lại để tiếp tục sử dụng đầy đủ
+              tính năng của TruyenReader.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-300 hover:text-white"
+                onClick={() => setIsSessionExpired(false)}
+              >
+                Để sau
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 text-xs font-semibold uppercase tracking-wide bg-rose-600 hover:bg-rose-700 text-white rounded-none"
+                onClick={() => {
+                  setIsSessionExpired(false);
+                  navigate("/login");
+                }}
+              >
+                Đăng nhập lại
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </div>
+
+      <div className="min-h-screen flex flex-col">
+        {!isReading && <Header />}
+        <main className="flex-grow">{children}</main>
+        {!isReading && (
+          <footer className="bg-neutral-950 border-t border-neutral-800 py-8 text-center text-neutral-500 text-sm">
+            <p>
+              © {new Date().getFullYear()} TruyenReader. Designed for manga
+              lovers.
+            </p>
+          </footer>
+        )}
+      </div>
+    </>
   );
 };
 

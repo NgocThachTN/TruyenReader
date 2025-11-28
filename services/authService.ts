@@ -26,6 +26,11 @@ const dispatchAuthEvents = () => {
   window.dispatchEvent(new CustomEvent("user:updated"));
 };
 
+const notifySessionExpired = () => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent("auth:sessionExpired"));
+};
+
 export const getAccessToken = (): string | null => {
   return getStorage()?.getItem(ACCESS_TOKEN_KEY) ?? null;
 };
@@ -97,6 +102,7 @@ let refreshPromise: Promise<AuthTokens> | null = null;
 const requestTokenRefresh = async (): Promise<AuthTokens> => {
   const refreshToken = getRefreshToken();
   if (!refreshToken) {
+    notifySessionExpired();
     throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
   }
 
@@ -111,6 +117,7 @@ const requestTokenRefresh = async (): Promise<AuthTokens> => {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    notifySessionExpired();
     throw new Error(
       data.message ||
         "Không thể làm mới phiên làm việc. Vui lòng đăng nhập lại."
@@ -147,6 +154,7 @@ export const fetchWithAutoRefresh = async (
     await refreshAccessToken();
   } catch (error) {
     clearAuthSession();
+    notifySessionExpired();
     throw error;
   }
 
@@ -154,9 +162,9 @@ export const fetchWithAutoRefresh = async (
 
   if (response.status === 401) {
     clearAuthSession();
+    notifySessionExpired();
     throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
   }
 
   return response;
 };
-
