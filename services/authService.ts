@@ -31,6 +31,46 @@ const notifySessionExpired = () => {
   window.dispatchEvent(new CustomEvent("auth:sessionExpired"));
 };
 
+let expiryTimer: number | null = null;
+
+const clearExpiryTimer = () => {
+  if (typeof window === "undefined") return;
+  if (expiryTimer) {
+    window.clearTimeout(expiryTimer);
+    expiryTimer = null;
+  }
+};
+
+const scheduleExpiryCheck = (token: string) => {
+  if (typeof window === "undefined") return;
+  clearExpiryTimer();
+  try {
+    const [, payload] = token.split(".");
+    if (!payload) return;
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    const decoded = JSON.parse(jsonPayload);
+    const exp = decoded?.exp;
+    if (!exp) return;
+    const delay = exp * 1000 - Date.now();
+    if (delay <= 0) {
+      notifySessionExpired();
+      return;
+    }
+    expiryTimer = window.setTimeout(() => {
+      notifySessionExpired();
+    }, delay);
+  } catch (error) {
+    console.warn("Failed to schedule token expiry notification", error);
+  }
+};
+
 export const getAccessToken = (): string | null => {
   return getStorage()?.getItem(ACCESS_TOKEN_KEY) ?? null;
 };
@@ -44,6 +84,7 @@ export const setTokens = (tokens: AuthTokens) => {
   if (!storage) return;
   storage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
   storage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+  scheduleExpiryCheck(tokens.accessToken);
   dispatchAuthEvents();
 };
 
@@ -55,6 +96,7 @@ export const persistAuthSession = (payload: PersistSessionPayload) => {
   if (payload.user) {
     storage.setItem(USER_KEY, JSON.stringify(payload.user));
   }
+  scheduleExpiryCheck(payload.accessToken);
   dispatchAuthEvents();
 };
 
@@ -64,6 +106,7 @@ export const clearAuthSession = () => {
   storage.removeItem(ACCESS_TOKEN_KEY);
   storage.removeItem(REFRESH_TOKEN_KEY);
   storage.removeItem(USER_KEY);
+  clearExpiryTimer();
   dispatchAuthEvents();
 };
 
