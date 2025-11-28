@@ -1,5 +1,6 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
+import { getAccessToken } from "../services/authService";
 
 interface RequireAuthProps {
   children: React.ReactElement;
@@ -11,8 +12,7 @@ const RequireAuth: React.FC<RequireAuthProps> = ({
   allowedRoles,
 }) => {
   const location = useLocation();
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token = getAccessToken();
 
   if (!token) {
     return <Navigate to="/login" replace state={{ from: location }} />;

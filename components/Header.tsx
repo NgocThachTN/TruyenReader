@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { searchComics, getImageUrl } from "../services/api";
 import { SearchData } from "../types/types";
 import ChangePasswordModal from "./ChangePasswordModal";
+import { logoutUser } from "../services/be";
 
 const Header: React.FC = () => {
   const [keyword, setKeyword] = useState("");
@@ -105,12 +106,17 @@ const Header: React.FC = () => {
     setIsMobileSearchOpen(false);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    setUser(null);
-    setShowUserMenu(false);
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch (error: any) {
+      console.error("Logout failed", error);
+      alert(error?.message || "Đăng xuất thất bại, vui lòng thử lại.");
+    } finally {
+      setUser(null);
+      setShowUserMenu(false);
+      navigate("/login");
+    }
   };
 
   const openChangePassword = () => {

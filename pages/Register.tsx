@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { registerUser, loginUser, API_BASE_URL } from "../services/be";
 import { RegisterData } from "../types/auth";
 import { motion } from "framer-motion";
+import { persistAuthSession } from "../services/authService";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -50,15 +51,15 @@ const Register: React.FC = () => {
         password: formData.password,
       });
 
-      // Save user info and token to localStorage
-      localStorage.setItem(
-        "user",
-        JSON.stringify(loginResponse.user || { email: formData.email })
-      );
-      localStorage.setItem("token", loginResponse.token || "dummy-token");
+      if (!loginResponse.accessToken || !loginResponse.refreshToken) {
+        throw new Error("Không thể tự động đăng nhập sau khi đăng ký.");
+      }
 
-      // Trigger a custom event so Header can update
-      window.dispatchEvent(new Event("storage"));
+      persistAuthSession({
+        user: loginResponse.user || { email: formData.email },
+        accessToken: loginResponse.accessToken,
+        refreshToken: loginResponse.refreshToken,
+      });
 
       // Show success message or redirect
       alert("Đăng ký thành công!");

@@ -13,8 +13,42 @@ import {
   ProfileUpdatePayload,
   ProfileUserResponse,
 } from "../types/profile";
+import { API_BASE_URL } from "./config";
+import {
+  buildAuthHeaders,
+  ensureAccessToken,
+  fetchWithAutoRefresh,
+  getRefreshToken,
+  clearAuthSession,
+  getAccessToken,
+} from "./authService";
 
-export const API_BASE_URL = "https://nodejs-test-api-o7bd.onrender.com/api";
+export { API_BASE_URL };
+
+const parseJsonResponse = async <T>(
+  response: Response,
+  defaultMessage: string
+): Promise<T> => {
+  const data = (await response.json().catch(() => ({}))) as any;
+  if (!response.ok) {
+    throw new Error(data?.message || defaultMessage);
+  }
+  return data as T;
+};
+
+export interface AuthSuccessResponse {
+  message: string;
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    userId: number;
+    email: string;
+    fullname?: string;
+    avatar?: string;
+    [key: string]: any;
+  };
+  [key: string]: any;
+}
 
 export const registerUser = async (data: RegisterData) => {
   try {
@@ -26,12 +60,7 @@ export const registerUser = async (data: RegisterData) => {
       body: JSON.stringify(data),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Registration failed");
-    }
-
-    return await response.json();
+    return await parseJsonResponse(response, "Registration failed");
   } catch (error) {
     console.error("Registration error:", error);
     throw error;
@@ -48,40 +77,56 @@ export const loginUser = async (data: LoginData) => {
       body: JSON.stringify(data),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Login failed");
-    }
-
-    return await response.json();
+    return await parseJsonResponse<AuthSuccessResponse>(response, "Login failed");
   } catch (error) {
     console.error("Login error:", error);
     throw error;
   }
 };
 
-export const addToFavorites = async (data: FavoriteData) => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("Bạn cần đăng nhập để thực hiện chức năng này");
+export const logoutUser = async () => {
+  const refreshToken = getRefreshToken();
+  const accessToken = getAccessToken();
+
+  if (!refreshToken || !accessToken) {
+    clearAuthSession();
+    return { message: "Đăng xuất thành công" };
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/favorites`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/auth/logout`, {
+        method: "POST",
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ refreshToken }),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Failed to add to favorites");
-    }
+    const data = await parseJsonResponse(response, "Đăng xuất thất bại");
+    clearAuthSession();
+    return data;
+  } catch (error) {
+    clearAuthSession();
+    throw error;
+  }
+};
 
-    return await response.json();
+export const addToFavorites = async (data: FavoriteData) => {
+  ensureAccessToken();
+  try {
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/favorites`, {
+        method: "POST",
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify(data),
+      })
+    );
+
+    return await parseJsonResponse(response, "Failed to add to favorites");
   } catch (error) {
     console.error("Add to favorites error:", error);
     throw error;
@@ -89,26 +134,21 @@ export const addToFavorites = async (data: FavoriteData) => {
 };
 
 export const getFavorites = async (): Promise<FavoritesResponse> => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("Bạn cần đăng nhập để xem danh sách yêu thích");
-  }
-
+  ensureAccessToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/favorites`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/favorites`, {
+        method: "GET",
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Failed to fetch favorites");
-    }
-
-    return await response.json();
+    return await parseJsonResponse<FavoritesResponse>(
+      response,
+      "Failed to fetch favorites"
+    );
   } catch (error) {
     console.error("Get favorites error:", error);
     throw error;
@@ -116,26 +156,18 @@ export const getFavorites = async (): Promise<FavoritesResponse> => {
 };
 
 export const removeFromFavorites = async (comicId: string) => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("Bạn cần đăng nhập để thực hiện chức năng này");
-  }
-
+  ensureAccessToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/favorites/${comicId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/favorites/${comicId}`, {
+        method: "DELETE",
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Failed to remove from favorites");
-    }
-
-    return await response.json();
+    return await parseJsonResponse(response, "Failed to remove from favorites");
   } catch (error) {
     console.error("Remove from favorites error:", error);
     throw error;
@@ -161,27 +193,19 @@ export const getComments = async (
 };
 
 export const addComment = async (data: CommentData) => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("Bạn cần đăng nhập để bình luận");
-  }
-
+  ensureAccessToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/comments`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/comments`, {
+        method: "POST",
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify(data),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Failed to add comment");
-    }
-
-    return await response.json();
+    return await parseJsonResponse(response, "Failed to add comment");
   } catch (error) {
     console.error("Add comment error:", error);
     throw error;
@@ -189,27 +213,19 @@ export const addComment = async (data: CommentData) => {
 };
 
 export const changePassword = async (data: ChangePasswordData) => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("Bạn cần đăng nhập để đổi mật khẩu");
-  }
-
+  ensureAccessToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/auth/change-password`, {
+        method: "POST",
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify(data),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Đổi mật khẩu thất bại");
-    }
-
-    return await response.json();
+    return await parseJsonResponse(response, "Đổi mật khẩu thất bại");
   } catch (error) {
     console.error("Change password error:", error);
     throw error;
@@ -282,32 +298,22 @@ export const resetPassword = async (data: ResetPasswordData) => {
   }
 };
 
-const getAuthToken = () => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("Bạn cần đăng nhập để thực hiện chức năng này");
-  }
-  return token;
-};
-
 export const getProfile = async (): Promise<ProfileResponse> => {
-  const token = getAuthToken();
-
+  ensureAccessToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/profile`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/profile`, {
+        method: "GET",
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Không thể lấy thông tin hồ sơ");
-    }
-
-    return await response.json();
+    return await parseJsonResponse<ProfileResponse>(
+      response,
+      "Không thể lấy thông tin hồ sơ"
+    );
   } catch (error) {
     console.error("Get profile error:", error);
     throw error;
@@ -317,25 +323,21 @@ export const getProfile = async (): Promise<ProfileResponse> => {
 export const getUserProfileById = async (
   userId: number
 ): Promise<ProfileResponse> => {
-  const token = getAuthToken();
-
+  ensureAccessToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/profile/${userId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/profile/${userId}`, {
+        method: "GET",
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || "Không thể lấy thông tin hồ sơ người dùng"
-      );
-    }
-
-    return await response.json();
+    return await parseJsonResponse<ProfileResponse>(
+      response,
+      "Không thể lấy thông tin hồ sơ người dùng"
+    );
   } catch (error) {
     console.error("Get user profile by id error:", error);
     throw error;
@@ -345,24 +347,22 @@ export const getUserProfileById = async (
 export const updateProfile = async (
   payload: ProfileUpdatePayload
 ): Promise<ProfileUserResponse> => {
-  const token = getAuthToken();
-
+  ensureAccessToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/profile`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/profile`, {
+        method: "PUT",
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify(payload),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Cập nhật hồ sơ thất bại");
-    }
-
-    return await response.json();
+    return await parseJsonResponse<ProfileUserResponse>(
+      response,
+      "Cập nhật hồ sơ thất bại"
+    );
   } catch (error) {
     console.error("Update profile error:", error);
     throw error;
@@ -372,25 +372,23 @@ export const updateProfile = async (
 export const uploadAvatar = async (
   file: File
 ): Promise<ProfileUserResponse> => {
-  const token = getAuthToken();
   const formData = new FormData();
   formData.append("avatar", file);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/profile`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    });
+    ensureAccessToken();
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/profile`, {
+        method: "POST",
+        headers: buildAuthHeaders(),
+        body: formData,
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Tải ảnh đại diện thất bại");
-    }
-
-    return await response.json();
+    return await parseJsonResponse<ProfileUserResponse>(
+      response,
+      "Tải ảnh đại diện thất bại"
+    );
   } catch (error) {
     console.error("Upload avatar error:", error);
     throw error;
@@ -398,24 +396,19 @@ export const uploadAvatar = async (
 };
 
 export const sendChatMessage = async (receiverId: number, message: string) => {
-  const token = getAuthToken();
-
+  ensureAccessToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/send`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ receiverId, message }),
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/chat/send`, {
+        method: "POST",
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ receiverId, message }),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Gửi tin nhắn thất bại");
-    }
-
-    return await response.json();
+    return await parseJsonResponse(response, "Gửi tin nhắn thất bại");
   } catch (error) {
     console.error("Send chat message error:", error);
     throw error;
@@ -423,23 +416,18 @@ export const sendChatMessage = async (receiverId: number, message: string) => {
 };
 
 export const markChatMessagesAsRead = async (senderId: number) => {
-  const token = getAuthToken();
-
+  ensureAccessToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/mark-read/${senderId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/chat/mark-read/${senderId}`, {
+        method: "PUT",
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Không thể đánh dấu đã đọc");
-    }
-
-    return await response.json();
+    return await parseJsonResponse(response, "Không thể đánh dấu đã đọc");
   } catch (error) {
     console.error("Mark chat messages as read error:", error);
     throw error;
@@ -484,24 +472,20 @@ export interface OnlineUsersResponse {
 }
 
 export const getConversations = async (): Promise<ConversationsResponse> => {
-  const token = getAuthToken();
-
+  ensureAccessToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/conversations`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/chat/conversations`, {
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || "Không thể tải danh sách cuộc trò chuyện"
-      );
-    }
-
-    return await response.json();
+    return await parseJsonResponse<ConversationsResponse>(
+      response,
+      "Không thể tải danh sách cuộc trò chuyện"
+    );
   } catch (error) {
     console.error("Get conversations error:", error);
     throw error;
@@ -509,24 +493,20 @@ export const getConversations = async (): Promise<ConversationsResponse> => {
 };
 
 export const getChatMessagesWithUser = async (userId: number) => {
-  const token = getAuthToken();
-
+  ensureAccessToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/messages/${userId}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/chat/messages/${userId}`, {
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || "Không thể tải tin nhắn cuộc trò chuyện"
-      );
-    }
-
-    return await response.json();
+    return await parseJsonResponse(
+      response,
+      "Không thể tải tin nhắn cuộc trò chuyện"
+    );
   } catch (error) {
     console.error("Get chat messages error:", error);
     throw error;
@@ -534,24 +514,20 @@ export const getChatMessagesWithUser = async (userId: number) => {
 };
 
 export const getOnlineUsers = async (): Promise<OnlineUsersResponse> => {
-  const token = getAuthToken();
-
+  ensureAccessToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/online-users`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetchWithAutoRefresh(() =>
+      fetch(`${API_BASE_URL}/chat/online-users`, {
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+      })
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || "Không thể tải danh sách user đang online"
-      );
-    }
-
-    return await response.json();
+    return await parseJsonResponse<OnlineUsersResponse>(
+      response,
+      "Không thể tải danh sách user đang online"
+    );
   } catch (error) {
     console.error("Get online users error:", error);
     throw error;

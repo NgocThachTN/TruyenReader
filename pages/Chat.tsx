@@ -14,6 +14,7 @@ import {
   sendChatMessage,
   markChatMessagesAsRead,
 } from "../services/be";
+import { getAccessToken } from "../services/authService";
 
 interface ChatMessage {
   messageId: number;
@@ -278,7 +279,7 @@ const Chat: React.FC = () => {
 
   useEffect(() => {
     // Kết nối Socket.IO với JWT token
-    const token = localStorage.getItem("token");
+    const token = getAccessToken();
     if (token) {
       const socket = io(SOCKET_URL, {
         auth: { token },

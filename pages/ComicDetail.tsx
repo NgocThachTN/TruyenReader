@@ -14,6 +14,7 @@ import { HistoryItem } from "../types/history";
 import Spinner from "../components/Spinner";
 import { motion } from "framer-motion";
 import { getHistory } from "../services/history";
+import { getAccessToken } from "../services/authService";
 
 const ComicDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -60,7 +61,7 @@ const ComicDetail: React.FC = () => {
         setComic(result.data.item);
         setDomain(result.data.APP_DOMAIN_CDN_IMAGE);
 
-        const token = localStorage.getItem("token");
+        const token = getAccessToken();
 
         if (token) {
           void (async () => {
@@ -131,7 +132,7 @@ const ComicDetail: React.FC = () => {
     if (!newComment.trim()) return;
     if (!comic) return;
 
-    const token = localStorage.getItem("token");
+    const token = getAccessToken();
     if (!token) {
       alert("Vui lòng đăng nhập để bình luận!");
       navigate("/login");
@@ -163,7 +164,7 @@ const ComicDetail: React.FC = () => {
   const handleAddToFavorites = async () => {
     if (!comic) return;
 
-    const token = localStorage.getItem("token");
+    const token = getAccessToken();
     if (!token) {
       alert("Vui lòng đăng nhập để thêm vào danh sách yêu thích!");
       navigate("/login");

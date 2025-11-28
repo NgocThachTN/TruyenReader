@@ -28,6 +28,7 @@ import RequireAuth from "./routes/RequireAuth";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
 import Chat from "./pages/Chat";
+import { persistAuthSession } from "./services/authService";
 
 const Layout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
@@ -37,7 +38,9 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
   // Check for auth token in URL (Google Login Redirect)
   useEffect(() => {
     const url = new URL(window.location.href);
-    const token = url.searchParams.get("token");
+    const accessToken =
+      url.searchParams.get("accessToken") || url.searchParams.get("token");
+    const refreshToken = url.searchParams.get("refreshToken");
     const userStr = url.searchParams.get("user");
     const error = url.searchParams.get("error");
 
@@ -47,18 +50,18 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
       return;
     }
 
-    if (!token || isProcessingToken) {
+    if (!accessToken || !refreshToken || isProcessingToken) {
       return;
     }
 
     setIsProcessingToken(true);
-    localStorage.setItem("token", token);
+    let resolvedUser: any = null;
 
     if (userStr) {
       try {
         const user = JSON.parse(decodeURIComponent(userStr));
         // Đảm bảo fullname được set đúng cách
-        const userData = {
+        resolvedUser = {
           ...user,
           fullname:
             user.fullname ||
@@ -68,13 +71,12 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
             (user.email && user.email.split("@")[0]) ||
             "User",
         };
-        localStorage.setItem("user", JSON.stringify(userData));
       } catch (e) {
         console.error("Failed to parse user from URL", e);
       }
     } else {
       try {
-        const base64Url = token.split(".")[1];
+        const base64Url = accessToken.split(".")[1];
         if (base64Url) {
           const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
           const jsonPayload = decodeURIComponent(
@@ -88,7 +90,7 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
           );
           const decoded = JSON.parse(jsonPayload);
           if (decoded) {
-            const userData = {
+            resolvedUser = {
               ...decoded,
               fullname:
                 decoded.fullname ||
@@ -98,7 +100,6 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
                 (decoded.email && decoded.email.split("@")[0]) ||
                 "User",
             };
-            localStorage.setItem("user", JSON.stringify(userData));
           }
         }
       } catch (e) {
@@ -106,7 +107,11 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
       }
     }
 
-    window.dispatchEvent(new Event("storage"));
+    persistAuthSession({
+      user: resolvedUser || undefined,
+      accessToken,
+      refreshToken,
+    });
 
     const cleanUrl = window.location.protocol + "//" + window.location.host;
     window.history.replaceState({}, document.title, cleanUrl);

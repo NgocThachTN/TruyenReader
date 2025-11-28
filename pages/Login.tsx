@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { loginUser, API_BASE_URL } from "../services/be";
 import { LoginData } from "../types/auth";
 import { motion } from "framer-motion";
+import { persistAuthSession } from "../services/authService";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -36,15 +37,15 @@ const Login: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await loginUser(formData);
-      // Save user info and token to localStorage
-      localStorage.setItem(
-        "user",
-        JSON.stringify(response.user || { email: formData.email })
-      );
-      localStorage.setItem("token", response.token || "dummy-token");
+      if (!response.accessToken || !response.refreshToken) {
+        throw new Error("Server không trả về thông tin đăng nhập hợp lệ.");
+      }
 
-      // Trigger a custom event so Header can update
-      window.dispatchEvent(new Event("storage"));
+      persistAuthSession({
+        user: response.user || { email: formData.email },
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      });
 
       navigate("/");
     } catch (err: any) {

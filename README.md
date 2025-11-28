@@ -25,6 +25,15 @@ OTruyen Reader provides a seamless interface for users to discover, browse, and 
 - **Responsive Design**: Optimized for both desktop and mobile devices, including a collapsible navigation menu.
 - **PWA Support**: Install as an app on Android/iOS devices with offline caching capabilities.
 
+## Authentication Flow
+
+- **Đăng nhập**: `POST /api/auth/login` nhận `{ email, password }` và trả về `accessToken`, `refreshToken`, cùng thông tin user. Frontend lưu cả hai token (localStorage/secure storage) bằng session helper mới.
+- **Gọi API bảo mật**: Mọi request tới BE thêm header `Authorization: Bearer <accessToken>`. Khi API trả `401`, hệ thống tự refresh token và retry mà không cần thao tác từ user.
+- **Làm mới token**: `POST /api/auth/refresh-token` nhận `{ refreshToken }` và trả về cặp token mới. Access token hết hạn sau 15 phút, refresh token sau 7 ngày. Mỗi thiết bị quản lý refresh token riêng biệt.
+- **Đăng xuất**: `POST /api/auth/logout` với header Bearer và body `{ refreshToken }`. Sau khi BE xác nhận, frontend xóa toàn bộ session (user, accessToken, refreshToken).
+- **Đăng nhập Google**: Redirect đến `/api/auth/google`, callback trả query `?accessToken=...&refreshToken=...&user=...`. Frontend parse các param và lưu qua session helper.
+- **Lưu ý bảo mật**: Ưu tiên secure storage/httpOnly cookie với SPA; không chia sẻ refresh token giữa thiết bị; luôn cập nhật local session sau mỗi lần refresh để tránh xung đột đa thiết bị.
+
 ## Technologies Used
 
 - **Frontend Framework**: React 19

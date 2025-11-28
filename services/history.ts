@@ -1,6 +1,11 @@
 import { ChapterInfo, ComicDetailItem } from "../types/types";
 import { HistoryItem } from "../types/history";
 import { getImageUrl } from "./api";
+import {
+  buildAuthHeaders,
+  fetchWithAutoRefresh,
+  getAccessToken,
+} from "./authService";
 
 const API_BASE_URL = "https://nodejs-test-api-o7bd.onrender.com/api";
 const HISTORY_KEY = "truyen_history";
@@ -21,16 +26,15 @@ const saveLocalHistory = (history: HistoryItem[]) => {
 };
 
 export const getHistory = async (): Promise<HistoryItem[]> => {
-  const token = localStorage.getItem("token");
+  const hasToken = !!getAccessToken();
 
-  // If logged in, try API first
-  if (token) {
+  if (hasToken) {
     try {
-      const response = await fetch(`${API_BASE_URL}/reading-history`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetchWithAutoRefresh(() =>
+        fetch(`${API_BASE_URL}/reading-history`, {
+          headers: buildAuthHeaders(),
+        })
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -94,7 +98,7 @@ export const addToHistory = async (
   domain: string,
   page: number = 0
 ) => {
-  const token = localStorage.getItem("token");
+  const hasToken = !!getAccessToken();
   const currentChapterValue = `${chapter.chapter_name}::${chapter.chapter_api_data}`;
 
   const newItem: HistoryItem = {
@@ -121,7 +125,7 @@ export const addToHistory = async (
   }
 
   // 2. If logged in, sync to API
-  if (token) {
+  if (hasToken) {
     try {
       const payload = {
         comicId: comic._id,
@@ -133,14 +137,16 @@ export const addToHistory = async (
 
       console.log("Saving history payload:", payload);
 
-      const response = await fetch(`${API_BASE_URL}/reading-history`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const payloadJson = JSON.stringify(payload);
+      const response = await fetchWithAutoRefresh(() =>
+        fetch(`${API_BASE_URL}/reading-history`, {
+          method: "POST",
+          headers: buildAuthHeaders({
+            "Content-Type": "application/json",
+          }),
+          body: payloadJson,
+        })
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -162,7 +168,7 @@ export const addToHistory = async (
 };
 
 export const removeFromHistory = async (comicSlug: string) => {
-  const token = localStorage.getItem("token");
+  const hasToken = !!getAccessToken();
 
   // 1. Remove from Local Storage
   try {
@@ -174,16 +180,13 @@ export const removeFromHistory = async (comicSlug: string) => {
   }
 
   // 2. Remove from API if logged in
-  if (token) {
+  if (hasToken) {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/reading-history/${comicSlug}`,
-        {
+      const response = await fetchWithAutoRefresh(() =>
+        fetch(`${API_BASE_URL}/reading-history/${comicSlug}`, {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+          headers: buildAuthHeaders(),
+        })
       );
 
       if (!response.ok) {
@@ -203,14 +206,18 @@ export const clearHistory = async () => {
   localStorage.removeItem(HISTORY_KEY);
 
   // 2. Clear API
-  const token = localStorage.getItem("token");
-  if (token) {
+  const hasToken = !!getAccessToken();
+  if (hasToken) {
     const history = await getHistory();
     // Note: This might be slow if there are many items, but API lacks clear-all
     const deletePromises = history.map((item) =>
-      fetch(`${API_BASE_URL}/reading-history/${item.comicSlug}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+      fetchWithAutoRefresh(() =>
+        fetch(`${API_BASE_URL}/reading-history/${item.comicSlug}`, {
+          method: "DELETE",
+          headers: buildAuthHeaders(),
+        })
+      ).catch((error) => {
+        console.error("Failed to clear history item", item.comicSlug, error);
       })
     );
     await Promise.all(deletePromises);
