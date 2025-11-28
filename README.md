@@ -4,9 +4,6 @@ A modern, responsive manga reading web application built with React and TypeScri
 
 <img width="1919" height="1076" alt="image" src="https://github.com/user-attachments/assets/fd3acc96-e78a-4693-ad7a-2ff5ccbab362" />
 
-
-
-
 ## Description
 
 OTruyen Reader provides a seamless interface for users to discover, browse, and read manga. It fetches data dynamically from the OTruyen API, offering up-to-date content including new releases, ongoing series, and completed works. The application is designed with a focus on user experience, featuring multiple reading modes and a mobile-friendly layout.
@@ -46,21 +43,25 @@ OTruyen Reader provides a seamless interface for users to discover, browse, and 
 ## Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    ```
 
 2. Navigate to the project directory:
+
    ```bash
    cd otruyen-reader
    ```
 
 3. Install dependencies:
+
    ```bash
    npm install
    ```
 
 4. Start the development server:
+
    ```bash
    npm run dev
    ```
@@ -79,12 +80,12 @@ OTruyen Reader provides a seamless interface for users to discover, browse, and 
 
 ### Tính năng PWA:
 
--  Hoạt động offline với Service Worker
--  Cache thông minh cho API và hình ảnh
--  Chạy như ứng dụng native (không có thanh địa chỉ)
--  Tải trang nhanh hơn với caching
--  Tự động cập nhật khi có phiên bản mới
+- Hoạt động offline với Service Worker
+- Cache thông minh cho API và hình ảnh
+- Chạy như ứng dụng native (không có thanh địa chỉ)
+- Tải trang nhanh hơn với caching
+- Tự động cập nhật khi có phiên bản mới
 
 ## Development
 
-This project was created and refined using **Gemini 3 Pro**, an advanced AI model, to generate code, optimize components, and implement features such as the chapter viewer logic and responsive navigation. 
+This project was created and refined using **Gemini 3 Pro**, an advanced AI model, to generate code, optimize components, and implement features such as the chapter viewer logic and responsive navigation.

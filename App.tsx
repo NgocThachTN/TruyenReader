@@ -28,6 +28,7 @@ import RequireAuth from "./routes/RequireAuth";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
 import Chat from "./pages/Chat";
+import NotFound from "./pages/NotFound";
 import { persistAuthSession } from "./services/authService";
 
 const Layout = ({ children }: { children?: React.ReactNode }) => {
@@ -290,6 +291,14 @@ const AnimatedRoutes = () => {
             element={
               // Remove PageTransition here to disable animation for chapter viewer
               <ChapterViewer />
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <PageTransition>
+                <NotFound />
+              </PageTransition>
             }
           />
         </Routes>
