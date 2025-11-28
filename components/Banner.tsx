@@ -104,12 +104,14 @@ const Banner: React.FC<BannerProps> = ({ comics, domain }) => {
             >
               <Link
                 to={`/comic/${currentComic.slug}`}
+                state={{ prefillComic: currentComic, prefillDomain: domain }}
                 className="px-6 py-2.5 md:px-8 md:py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs md:text-sm uppercase tracking-wider transition-all hover:-translate-y-1 border border-rose-600"
               >
                 Đọc Ngay
               </Link>
               <Link
                 to={`/comic/${currentComic.slug}`}
+                state={{ prefillComic: currentComic, prefillDomain: domain }}
                 className="px-6 py-2.5 md:px-8 md:py-3 bg-transparent hover:bg-white hover:text-black text-white font-bold text-xs md:text-sm uppercase tracking-wider transition-all hover:-translate-y-1 border border-white"
               >
                 Chi Tiết

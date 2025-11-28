@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { fetchComicDetail, getImageUrl } from "../services/api";
 import {
   addToFavorites,
@@ -8,19 +8,41 @@ import {
   getComments,
   addComment,
 } from "../services/be";
-import { ComicDetailItem } from "../types/types";
+import { ComicDetailItem, ComicItem } from "../types/types";
 import { CommentItem } from "../types/comment";
 import { HistoryItem } from "../types/history";
 import Spinner from "../components/Spinner";
 import { motion } from "framer-motion";
 import { getHistory } from "../services/history";
 
+const buildPrefilledDetail = (
+  prefill?: ComicItem | null
+): ComicDetailItem | null => {
+  if (!prefill) return null;
+  return {
+    ...prefill,
+    content: "",
+    author: ["Đang cập nhật"],
+    chapters: [],
+  };
+};
+
 const ComicDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const [comic, setComic] = useState<ComicDetailItem | null>(null);
-  const [domain, setDomain] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
+  const location = useLocation();
+  const navigationState =
+    (location.state as {
+      prefillComic?: ComicItem;
+      prefillDomain?: string;
+    }) || {};
+  const prefillComic = navigationState.prefillComic;
+  const prefillDomain = navigationState.prefillDomain;
+  const [comic, setComic] = useState<ComicDetailItem | null>(() =>
+    buildPrefilledDetail(prefillComic)
+  );
+  const [domain, setDomain] = useState<string>(prefillDomain || "");
+  const [loading, setLoading] = useState<boolean>(() => !prefillComic);
   const [error, setError] = useState<string | null>(null);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
   const [isAddingFavorite, setIsAddingFavorite] = useState(false);
@@ -44,8 +66,23 @@ const ComicDetail: React.FC = () => {
     setLastReadEntry(null);
     let isActive = true;
 
-    const loadDetail = async () => {
+    if (prefillComic) {
+      const hydrated = buildPrefilledDetail(prefillComic);
+      setComic(hydrated);
+      if (prefillDomain) {
+        setDomain(prefillDomain);
+      }
+      setLoading(false);
+    } else {
+      setComic(null);
+      setDomain("");
       setLoading(true);
+    }
+
+    const loadDetail = async () => {
+      if (!prefillComic) {
+        setLoading(true);
+      }
 
       try {
         const result = await fetchComicDetail(slug);
@@ -92,7 +129,9 @@ const ComicDetail: React.FC = () => {
           }
         })();
 
-        void loadComments(slug);
+        if (slug) {
+          void loadComments(slug);
+        }
       } catch (err) {
         if (isActive) setError("Không thể tải thông tin truyện.");
       } finally {
@@ -105,7 +144,7 @@ const ComicDetail: React.FC = () => {
     return () => {
       isActive = false;
     };
-  }, [slug]);
+  }, [slug, prefillComic, prefillDomain]);
 
   const loadComments = async (comicSlug: string) => {
     setLoadingComments(true);

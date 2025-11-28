@@ -18,6 +18,7 @@ const ComicCard: React.FC<ComicCardProps> = ({ comic, domain }) => {
   return (
     <Link
       to={`/comic/${comic.slug}`}
+      state={{ prefillComic: comic, prefillDomain: domain }}
       className="group flex flex-col h-full bg-neutral-900 border border-neutral-800 hover:border-rose-600 transition-all duration-300 relative"
     >
       <div className="relative aspect-[2/3] overflow-hidden bg-neutral-800">
