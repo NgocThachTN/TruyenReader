@@ -32,6 +32,7 @@ const ComicDetail: React.FC = () => {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [lastReadEntry, setLastReadEntry] = useState<HistoryItem | null>(null);
   const isMountedRef = useRef(true);
+  const lastFetchTimeRef = useRef<number>(0);
 
   useEffect(() => {
     return () => {
@@ -39,72 +40,113 @@ const ComicDetail: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    if (!slug) return;
-    setLastReadEntry(null);
-    let isActive = true;
+  // Function to load comic details - extracted for reuse
+  const loadDetail = async (comicSlug: string, isActive: { current: boolean }, forceRefresh = false) => {
+    // Prevent duplicate fetches within 1 second unless forced
+    const now = Date.now();
+    if (!forceRefresh && now - lastFetchTimeRef.current < 1000) {
+      return;
+    }
+    lastFetchTimeRef.current = now;
 
-    const loadDetail = async () => {
-      setLoading(true);
+    setLoading(true);
+    setError(null);
 
-      try {
-        const result = await fetchComicDetail(slug);
-        // Sort chapters from newest (highest number) to oldest (lowest number)
-        result.data.item.chapters.forEach((server) => {
-          server.server_data.sort((a, b) => {
-            return parseFloat(b.chapter_name) - parseFloat(a.chapter_name);
-          });
+    try {
+      const result = await fetchComicDetail(comicSlug);
+      // Sort chapters from newest (highest number) to oldest (lowest number)
+      result.data.item.chapters.forEach((server) => {
+        server.server_data.sort((a, b) => {
+          return parseFloat(b.chapter_name) - parseFloat(a.chapter_name);
         });
+      });
 
-        if (!isActive) return;
-        setComic(result.data.item);
-        setDomain(result.data.APP_DOMAIN_CDN_IMAGE);
+      if (!isActive.current) return;
+      setComic(result.data.item);
+      setDomain(result.data.APP_DOMAIN_CDN_IMAGE);
 
-        const token = getAccessToken();
+      const token = getAccessToken();
 
-        if (token) {
-          void (async () => {
-            try {
-              const favResponse = await getFavorites();
-              const isFav = favResponse.favorites.some(
-                (fav) =>
-                  fav.comicId === result.data.item._id ||
-                  fav.comicSlug === result.data.item.slug
-              );
-              if (isActive) setIsFavorite(isFav);
-            } catch (favoritesError) {
-              console.error("Failed to check favorites:", favoritesError);
-            }
-          })();
-        } else if (isActive) {
-          setIsFavorite(false);
-        }
-
+      if (token) {
         void (async () => {
           try {
-            const historyList = await getHistory();
-            const historyItem = historyList.find(
-              (item) => item.comicSlug === result.data.item.slug
+            const favResponse = await getFavorites();
+            const isFav = favResponse.favorites.some(
+              (fav) =>
+                fav.comicId === result.data.item._id ||
+                fav.comicSlug === result.data.item.slug
             );
-            if (isActive) setLastReadEntry(historyItem || null);
-          } catch (historyError) {
-            console.error("Failed to load reading history:", historyError);
+            if (isActive.current) setIsFavorite(isFav);
+          } catch (favoritesError) {
+            console.error("Failed to check favorites:", favoritesError);
           }
         })();
+      } else if (isActive.current) {
+        setIsFavorite(false);
+      }
 
-        void loadComments(slug);
-      } catch (err) {
-        if (isActive) setError("Không thể tải thông tin truyện.");
-      } finally {
-        if (isActive) setLoading(false);
+      void (async () => {
+        try {
+          const historyList = await getHistory();
+          const historyItem = historyList.find(
+            (item) => item.comicSlug === result.data.item.slug
+          );
+          if (isActive.current) setLastReadEntry(historyItem || null);
+        } catch (historyError) {
+          console.error("Failed to load reading history:", historyError);
+        }
+      })();
+
+      void loadComments(comicSlug);
+    } catch (err) {
+      if (isActive.current) setError("Không thể tải thông tin truyện.");
+    } finally {
+      if (isActive.current) setLoading(false);
+    }
+  };
+
+  // Re-fetch data when user returns to the tab after being away
+  useEffect(() => {
+    if (!slug) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // User returned to the tab - check if we need to refresh
+        const timeSinceLastFetch = Date.now() - lastFetchTimeRef.current;
+        // Refresh if more than 30 seconds have passed
+        if (timeSinceLastFetch > 30000) {
+          const isActive = { current: true };
+          void loadDetail(slug, isActive, true);
+        }
       }
     };
 
-    void loadDetail();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [slug]);
+
+  // Main effect to load comic details on mount or slug change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    if (!slug) return;
+    
+    // Reset all state when slug changes
+    setComic(null);
+    setDomain("");
+    setLastReadEntry(null);
+    setComments([]);
+    setIsFavorite(false);
+    setError(null);
+    setIsDescExpanded(false);
+    
+    const isActive = { current: true };
+
+    void loadDetail(slug, isActive, true);
 
     return () => {
-      isActive = false;
+      isActive.current = false;
     };
   }, [slug]);
 
