@@ -1254,7 +1254,11 @@ const ChapterViewer: React.FC = () => {
         <div
           className={`bg-neutral-900/95 border-t border-neutral-800 py-4 backdrop-blur-sm transition-transform duration-300 ${
             readingMode === "single" ? "fixed bottom-0 left-0 right-0 z-50" : ""
-          } ${!showNav ? "translate-y-full" : "translate-y-0"}`}
+          } ${
+            readingMode === "single" && !showNav
+              ? "translate-y-full"
+              : "translate-y-0"
+          }`}
         >
           <div className="container mx-auto px-4 flex flex-col items-center gap-4">
             <div className="flex items-center justify-center gap-6 w-full max-w-lg">
