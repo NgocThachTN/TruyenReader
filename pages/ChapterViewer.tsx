@@ -803,60 +803,114 @@ const ChapterViewer: React.FC = () => {
           </div>
 
           {/* Center: Chapter Selector */}
-          <div className="relative">
+          <div className="flex items-center gap-2">
+            {/* Prev Chapter Button (Mobile) */}
             <button
-              onClick={() => {
-                setIsChapterListOpen(!isChapterListOpen);
-                setIsSettingsOpen(false);
-              }}
-              className="flex items-center gap-2 px-4 py-1.5 bg-neutral-800/50 hover:bg-neutral-800 text-neutral-200 border border-neutral-700/50 hover:border-neutral-600 transition-all"
+              onClick={() => prevChapter && handleChapterChange(prevChapter)}
+              disabled={!prevChapter}
+              className={`p-1.5 rounded border border-neutral-700/50 transition-all md:hidden ${
+                prevChapter
+                  ? "bg-neutral-800/50 text-neutral-200 hover:bg-neutral-800 hover:border-neutral-600"
+                  : "bg-neutral-900/30 text-neutral-600 cursor-not-allowed border-transparent"
+              }`}
             >
-              <span className="text-sm font-medium truncate max-w-[150px] sm:max-w-[250px]">
-                {data.item.chapter_path.split("/").pop()?.replace(/_/g, " ") ||
-                  "Chương"}
-              </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className={`w-3 h-3 transition-transform duration-300 ${
-                  isChapterListOpen ? "rotate-180" : ""
-                }`}
+                className="w-5 h-5"
               >
                 <path
-                  strokeLinecap="square"
-                  strokeLinejoin="miter"
-                  d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 19.5 8.25 12l7.5-7.5"
                 />
               </svg>
             </button>
 
-            {isChapterListOpen && sortedChapters.length > 0 && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 max-h-[60vh] overflow-y-auto bg-neutral-900 border border-neutral-800 shadow-2xl z-50 custom-scrollbar">
-                {sortedChapters.map((chapter, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleChapterChange(chapter)}
-                    className={`w-full text-left px-5 py-3 border-b border-neutral-800 hover:bg-neutral-800 transition-colors flex justify-between items-center text-sm group ${
-                      chapter.chapter_api_data ===
-                      decodeURIComponent(apiUrl || "")
-                        ? "bg-neutral-800 text-rose-500"
-                        : "text-neutral-400"
-                    }`}
-                  >
-                    <span className="font-medium group-hover:text-white transition-colors">
-                      Chương {chapter.chapter_name}
-                    </span>
-                    {chapter.chapter_api_data ===
-                      decodeURIComponent(apiUrl || "") && (
-                      <div className="w-1.5 h-1.5 bg-rose-500 rounded-full"></div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setIsChapterListOpen(!isChapterListOpen);
+                  setIsSettingsOpen(false);
+                }}
+                className="flex items-center gap-2 px-4 py-1.5 bg-neutral-800/50 hover:bg-neutral-800 text-neutral-200 border border-neutral-700/50 hover:border-neutral-600 transition-all"
+              >
+                <span className="text-sm font-medium truncate max-w-[150px] sm:max-w-[250px]">
+                  {data.item.chapter_path.split("/").pop()?.replace(/_/g, " ") ||
+                    "Chương"}
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className={`w-3 h-3 transition-transform duration-300 ${
+                    isChapterListOpen ? "rotate-180" : ""
+                  }`}
+                >
+                  <path
+                    strokeLinecap="square"
+                    strokeLinejoin="miter"
+                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                  />
+                </svg>
+              </button>
+
+              {isChapterListOpen && sortedChapters.length > 0 && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 max-h-[60vh] overflow-y-auto bg-neutral-900 border border-neutral-800 shadow-2xl z-50 custom-scrollbar">
+                  {sortedChapters.map((chapter, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleChapterChange(chapter)}
+                      className={`w-full text-left px-5 py-3 border-b border-neutral-800 hover:bg-neutral-800 transition-colors flex justify-between items-center text-sm group ${
+                        chapter.chapter_api_data ===
+                        decodeURIComponent(apiUrl || "")
+                          ? "bg-neutral-800 text-rose-500"
+                          : "text-neutral-400"
+                      }`}
+                    >
+                      <span className="font-medium group-hover:text-white transition-colors">
+                        Chương {chapter.chapter_name}
+                      </span>
+                      {chapter.chapter_api_data ===
+                        decodeURIComponent(apiUrl || "") && (
+                        <div className="w-1.5 h-1.5 bg-rose-500 rounded-full"></div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Next Chapter Button (Mobile) */}
+            <button
+              onClick={() => nextChapter && handleChapterChange(nextChapter)}
+              disabled={!nextChapter}
+              className={`p-1.5 rounded border border-neutral-700/50 transition-all md:hidden ${
+                nextChapter
+                  ? "bg-neutral-800/50 text-neutral-200 hover:bg-neutral-800 hover:border-neutral-600"
+                  : "bg-neutral-900/30 text-neutral-600 cursor-not-allowed border-transparent"
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                />
+              </svg>
+            </button>
           </div>
 
           {/* Right: Settings & Toggle */}
