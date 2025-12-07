@@ -808,7 +808,7 @@ const ChapterViewer: React.FC = () => {
             <button
               onClick={() => prevChapter && handleChapterChange(prevChapter)}
               disabled={!prevChapter}
-              className={`p-1.5 rounded border border-neutral-700/50 transition-all md:hidden ${
+              className={`p-1.5 rounded border border-neutral-700/50 transition-all lg:hidden ${
                 prevChapter
                   ? "bg-neutral-800/50 text-neutral-200 hover:bg-neutral-800 hover:border-neutral-600"
                   : "bg-neutral-900/30 text-neutral-600 cursor-not-allowed border-transparent"
@@ -890,7 +890,7 @@ const ChapterViewer: React.FC = () => {
             <button
               onClick={() => nextChapter && handleChapterChange(nextChapter)}
               disabled={!nextChapter}
-              className={`p-1.5 rounded border border-neutral-700/50 transition-all md:hidden ${
+              className={`p-1.5 rounded border border-neutral-700/50 transition-all lg:hidden ${
                 nextChapter
                   ? "bg-neutral-800/50 text-neutral-200 hover:bg-neutral-800 hover:border-neutral-600"
                   : "bg-neutral-900/30 text-neutral-600 cursor-not-allowed border-transparent"
